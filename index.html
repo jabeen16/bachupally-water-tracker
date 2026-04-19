@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bachupally Water Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Setup Modal -->
+  <div id="setup-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Setup GitHub Token</h2>
+      <p>Enter a fine-grained personal access token with <strong>Contents: read/write</strong> permission for the <code>bachupally-water-tracker</code> repo.</p>
+      <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx">
+      <div class="modal-row">
+        <input type="text" id="repo-owner" placeholder="GitHub username" value="jabeen16">
+        <input type="text" id="repo-name" placeholder="Repo name" value="bachupally-water-tracker">
+      </div>
+      <button id="save-token-btn">Save & Connect</button>
+      <p id="setup-error" class="error hidden"></p>
+    </div>
+  </div>
+
+  <!-- Add Reading Modal -->
+  <div id="reading-modal" class="modal hidden">
+    <div class="modal-content modal-wide">
+      <h2>Add Meter Reading</h2>
+      <div class="form-row">
+        <label>Date:</label>
+        <input type="date" id="reading-date">
+      </div>
+      <div id="reading-fields"></div>
+      <div class="modal-actions">
+        <button id="save-reading-btn" class="btn-primary">Save Reading</button>
+        <button id="cancel-reading-btn" class="btn-secondary">Cancel</button>
+      </div>
+      <p id="reading-error" class="error hidden"></p>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <header>
+    <h1>Bachupally Water Tracker</h1>
+    <div class="header-actions">
+      <button id="add-reading-btn" class="btn-primary">+ Add Reading</button>
+      <button id="settings-btn" class="btn-icon" title="Settings">&#9881;</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Summary Cards -->
+    <section id="summary-cards" class="cards"></section>
+
+    <!-- Charts -->
+    <section class="chart-section">
+      <h2>Per Day Usage — All Rooms (Litres)</h2>
+      <div class="chart-container">
+        <canvas id="all-rooms-chart"></canvas>
+      </div>
+    </section>
+
+    <section class="chart-section">
+      <div class="chart-header">
+        <h2>Per Day Usage — Selected Room (Litres)</h2>
+        <select id="room-select"></select>
+      </div>
+      <div class="chart-container">
+        <canvas id="single-room-chart"></canvas>
+      </div>
+    </section>
+
+    <!-- Data Table -->
+    <section class="table-section">
+      <h2>Consumption Summary</h2>
+      <div class="table-wrapper">
+        <table id="consumption-table"></table>
+      </div>
+    </section>
+
+    <section class="table-section">
+      <h2>Per Day Usage</h2>
+      <div class="table-wrapper">
+        <table id="perday-table"></table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Bachupally Water Tracker &mdash; Data stored in GitHub</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
