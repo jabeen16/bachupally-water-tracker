@@ -1,12 +1,27 @@
 let pendingEdits = {};
 let currentMonth = 'all';
+let editMode = false;
 
 function renderReadingsTable() {
   const table = document.getElementById('readings-table');
+  const wrapper = table.closest('.table-wrapper');
+  const editHint = document.querySelector('.edit-hint');
+  const editBtn = document.getElementById('edit-mode-btn');
   const dates = filterDatesByMonth(DATA.dates, currentMonth);
   const saveBtn = document.getElementById('save-edits-btn');
+  const latestDate = DATA.dates[DATA.dates.length - 1];
   pendingEdits = {};
   saveBtn.classList.add('hidden');
+
+  if (editMode) {
+    wrapper.classList.add('edit-mode');
+    editHint.classList.remove('hidden');
+    editBtn.textContent = 'Cancel';
+  } else {
+    wrapper.classList.remove('edit-mode');
+    editHint.classList.add('hidden');
+    editBtn.textContent = 'Edit';
+  }
 
   let html = '<thead><tr><th>Room</th><th>Tenant</th>';
   dates.forEach(d => { html += `<th>${fmtDate(d)}</th>`; });
@@ -16,19 +31,30 @@ function renderReadingsTable() {
     html += `<tr><td>${r.room}</td><td class="editable-name" data-resident="${ri}">${r.name || '-'}</td>`;
     dates.forEach(d => {
       const val = r.readings[d] != null ? r.readings[d] : '';
-      html += `<td class="editable" data-resident="${ri}" data-date="${d}">${val ? numFmt(val) : '-'}</td>`;
+      const cls = d === latestDate ? 'editable' : '';
+      html += `<td class="${cls}" data-resident="${ri}" data-date="${d}">${val ? numFmt(val) : '-'}</td>`;
     });
     html += '</tr>';
   });
   html += '</tbody>';
   table.innerHTML = html;
 
-  table.querySelectorAll('td.editable').forEach(td => {
-    td.addEventListener('click', () => startEdit(td));
-  });
-  table.querySelectorAll('td.editable-name').forEach(td => {
-    td.addEventListener('click', () => startNameEdit(td));
-  });
+  if (editMode) {
+    table.querySelectorAll('td.editable').forEach(td => {
+      td.addEventListener('click', () => startEdit(td));
+    });
+    table.querySelectorAll('td.editable-name').forEach(td => {
+      td.addEventListener('click', () => startNameEdit(td));
+    });
+  }
+}
+
+function toggleEditMode() {
+  if (editMode && Object.keys(pendingEdits).length > 0) {
+    if (!confirm('Discard unsaved changes?')) return;
+  }
+  editMode = !editMode;
+  renderReadingsTable();
 }
 
 function startNameEdit(td) {
@@ -128,6 +154,7 @@ async function saveEdits() {
   try {
     const { sha } = await fetchData();
     await saveData(DATA, sha);
+    editMode = false;
     renderReadingsTable();
   } catch (e) {
     if (isAuthError(e)) {
@@ -222,6 +249,7 @@ async function saveReading() {
     await saveData(DATA, sha);
 
     document.getElementById('reading-modal').classList.add('hidden');
+    editMode = false;
     renderReadingsTable();
   } catch (e) {
     DATA.dates = DATA.dates.filter(d => d !== date);
@@ -258,5 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('reading-modal').classList.add('hidden');
   });
   document.getElementById('save-edits-btn').addEventListener('click', saveEdits);
+  document.getElementById('edit-mode-btn').addEventListener('click', toggleEditMode);
   loadData(initReadings);
 });

@@ -63,11 +63,12 @@
         <h2>Meter Readings</h2>
         <div class="header-actions">
           <button id="add-reading-btn" class="btn-primary">+ Add Reading</button>
+          <button id="edit-mode-btn" class="btn-secondary">Edit</button>
           <button id="save-edits-btn" class="btn-primary hidden">Save Changes</button>
           <button id="settings-btn" class="btn-secondary" title="Update GitHub token">&#9881; Settings</button>
         </div>
       </div>
-      <p class="edit-hint">Click any reading value to edit it.</p>
+      <p class="edit-hint hidden">Edit mode: click a tenant name or the latest reading to change it. Click Save Changes when done, or Cancel to discard.</p>
       <div class="table-wrapper">
         <table id="readings-table"></table>
       </div>

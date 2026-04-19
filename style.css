@@ -174,8 +174,12 @@ td:nth-child(2), th:nth-child(2) { text-align: center; }
 td.high { background: #fde8e8; color: #c00000; font-weight: 600; }
 td.low { background: #e8f5e9; color: #2e7d32; }
 
-td.editable, td.editable-name { cursor: pointer; }
-td.editable:hover, td.editable-name:hover { background: #e8f0fe; outline: 2px solid #4472c4; outline-offset: -2px; }
+.table-wrapper.edit-mode td.editable,
+.table-wrapper.edit-mode td.editable-name { cursor: pointer; }
+.table-wrapper.edit-mode td.editable:hover,
+.table-wrapper.edit-mode td.editable-name:hover { background: #e8f0fe; outline: 2px solid #4472c4; outline-offset: -2px; }
+.table-wrapper.edit-mode { background: #fffbea; border-radius: 4px; }
+.edit-hint { font-size: 0.8rem; color: #b38600; font-weight: 500; margin-bottom: 0.75rem; }
 td.editing { padding: 0.2rem; }
 td.editing input {
   width: 100%;
@@ -187,7 +191,6 @@ td.editing input {
 }
 td.changed { background: #fff3cd; }
 
-.edit-hint { font-size: 0.8rem; color: #888; margin-bottom: 0.75rem; }
 .hidden { display: none; }
 
 /* Modal */
