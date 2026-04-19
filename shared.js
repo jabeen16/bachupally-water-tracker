@@ -101,6 +101,57 @@ function roomLabel(r) {
   return r.name ? `${r.room} (${r.name})` : r.room;
 }
 
+// ── Month filtering ──
+
+function getMonths(dates) {
+  const months = new Set();
+  dates.forEach(d => months.add(d.substring(0, 7))); // "2026-04"
+  return Array.from(months).sort();
+}
+
+function fmtMonth(ym) {
+  const [y, m] = ym.split('-');
+  const dt = new Date(parseInt(y), parseInt(m) - 1);
+  return dt.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+}
+
+function filterDatesByMonth(dates, month) {
+  if (month === 'all') return dates;
+  return dates.filter(d => d.startsWith(month));
+}
+
+function getFilteredData(month) {
+  const filteredDates = filterDatesByMonth(DATA.dates, month);
+  return {
+    ...DATA,
+    dates: filteredDates
+  };
+}
+
+function populateMonthSelect(selectEl, onChange) {
+  const months = getMonths(DATA.dates);
+  selectEl.innerHTML = '';
+
+  const allOpt = document.createElement('option');
+  allOpt.value = 'all';
+  allOpt.textContent = 'All Months';
+  selectEl.appendChild(allOpt);
+
+  months.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = fmtMonth(m);
+    selectEl.appendChild(opt);
+  });
+
+  // Default to latest month
+  if (months.length > 0) {
+    selectEl.value = months[months.length - 1];
+  }
+
+  selectEl.addEventListener('change', () => onChange(selectEl.value));
+}
+
 // ── Setup ──
 
 function showSetup() {

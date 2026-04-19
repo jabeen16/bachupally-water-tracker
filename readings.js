@@ -1,8 +1,9 @@
 let pendingEdits = {};
+let currentMonth = 'all';
 
 function renderReadingsTable() {
   const table = document.getElementById('readings-table');
-  const dates = DATA.dates;
+  const dates = filterDatesByMonth(DATA.dates, currentMonth);
   const saveBtn = document.getElementById('save-edits-btn');
   pendingEdits = {};
   saveBtn.classList.add('hidden');
@@ -218,13 +219,23 @@ async function saveReading() {
   }
 }
 
+function initReadings() {
+  const select = document.getElementById('month-select');
+  populateMonthSelect(select, (month) => {
+    currentMonth = month;
+    renderReadingsTable();
+  });
+  currentMonth = select.value;
+  renderReadingsTable();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  initSetupListeners(renderReadingsTable);
+  initSetupListeners(initReadings);
   document.getElementById('add-reading-btn').addEventListener('click', openReadingModal);
   document.getElementById('save-reading-btn').addEventListener('click', saveReading);
   document.getElementById('cancel-reading-btn').addEventListener('click', () => {
     document.getElementById('reading-modal').classList.add('hidden');
   });
   document.getElementById('save-edits-btn').addEventListener('click', saveEdits);
-  loadData(renderReadingsTable);
+  loadData(initReadings);
 });

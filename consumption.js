@@ -193,12 +193,19 @@ function renderTables(computed) {
   pTable.innerHTML = pHtml;
 }
 
-function renderAll() {
-  const computed = computeConsumption(DATA);
+function renderForMonth(month) {
+  const filtered = getFilteredData(month);
+  const computed = computeConsumption(filtered);
   renderCards(computed);
   renderTables(computed);
   renderAllRoomsChart(computed);
   renderLineChart(computed);
+}
+
+function renderAll() {
+  const select = document.getElementById('month-select');
+  populateMonthSelect(select, renderForMonth);
+  renderForMonth(select.value);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
