@@ -99,6 +99,10 @@ function numFmt(n) {
   return n.toLocaleString('en-IN');
 }
 
+function roomLabel(r) {
+  return r.name ? `${r.room} (${r.name})` : r.room;
+}
+
 // ── Render Summary Cards ──
 
 function renderCards(computed) {
@@ -116,12 +120,12 @@ function renderCards(computed) {
     <div class="card">
       <div class="label">Highest Per Day</div>
       <div class="value">${numFmt(highestRoom.totalPerDay)}</div>
-      <div class="sub">${highestRoom.name} - ${highestRoom.room}</div>
+      <div class="sub">${roomLabel(highestRoom)}</div>
     </div>
     <div class="card">
       <div class="label">Lowest Per Day</div>
       <div class="value">${numFmt(lowestRoom.totalPerDay)}</div>
-      <div class="sub">${lowestRoom.name} - ${lowestRoom.room}</div>
+      <div class="sub">${roomLabel(lowestRoom)}</div>
     </div>
     <div class="card">
       <div class="label">Readings Recorded</div>
@@ -140,7 +144,7 @@ const COLORS = [
 
 function renderAllRoomsChart(computed) {
   const ctx = document.getElementById('all-rooms-chart').getContext('2d');
-  const labels = computed.rows.map(r => `${r.name} - ${r.room}`);
+  const labels = computed.rows.map(r => roomLabel(r));
   const datasets = [];
 
   computed.periods.forEach((p, i) => {
@@ -202,7 +206,7 @@ function renderSingleRoomChart(computed, roomIndex) {
     data: {
       labels,
       datasets: [{
-        label: `${resident.name} - ${resident.room}`,
+        label: roomLabel(resident),
         data,
         borderColor: '#c00000',
         backgroundColor: 'rgba(192, 0, 0, 0.1)',
@@ -241,7 +245,7 @@ function renderSingleRoomChart(computed, roomIndex) {
 function renderTables(computed) {
   // Consumption table
   const cTable = document.getElementById('consumption-table');
-  let cHtml = '<thead><tr><th>Tenant Name</th><th>Room</th>';
+  let cHtml = '<thead><tr><th>Room</th><th>Tenant</th>';
   computed.periods.forEach(p => { cHtml += `<th>${periodLabel(p)}</th>`; });
   cHtml += '<th>Total</th></tr></thead><tbody>';
 
@@ -249,7 +253,7 @@ function renderTables(computed) {
   const avgPerDay = allPerDay.reduce((a, b) => a + b, 0) / allPerDay.length;
 
   computed.rows.forEach(r => {
-    cHtml += `<tr><td>${r.name}</td><td>${r.room}</td>`;
+    cHtml += `<tr><td>${r.room}</td><td>${r.name}</td>`;
     computed.periods.forEach(p => {
       const key = `${p.from}_${p.to}`;
       cHtml += `<td>${r.consumption[key] != null ? numFmt(r.consumption[key]) : ''}</td>`;
@@ -261,12 +265,12 @@ function renderTables(computed) {
 
   // Per day table with anomaly highlighting
   const pTable = document.getElementById('perday-table');
-  let pHtml = '<thead><tr><th>Tenant Name</th><th>Room</th>';
+  let pHtml = '<thead><tr><th>Room</th><th>Tenant</th>';
   computed.periods.forEach(p => { pHtml += `<th>${periodLabel(p)}</th>`; });
   pHtml += '<th>Total/Day</th></tr></thead><tbody>';
 
   computed.rows.forEach(r => {
-    pHtml += `<tr><td>${r.name}</td><td>${r.room}</td>`;
+    pHtml += `<tr><td>${r.room}</td><td>${r.name}</td>`;
     computed.periods.forEach(p => {
       const key = `${p.from}_${p.to}`;
       const val = r.perDay[key];
@@ -288,7 +292,7 @@ function populateRoomSelect(computed) {
   computed.rows.forEach((r, i) => {
     const opt = document.createElement('option');
     opt.value = i;
-    opt.textContent = `${r.name} - ${r.room}`;
+    opt.textContent = roomLabel(r);
     select.appendChild(opt);
   });
   select.addEventListener('change', () => {
@@ -314,7 +318,7 @@ function openReadingModal() {
   DATA.residents.forEach((r, i) => {
     fields.innerHTML += `
       <div class="reading-entry">
-        <label>${r.name} (${r.room})</label>
+        <label>${r.room} — ${r.name}</label>
         <input type="number" id="reading-${i}" placeholder="Meter reading">
       </div>
     `;
@@ -394,12 +398,12 @@ function renderReadingsTable() {
   pendingEdits = {};
   saveBtn.classList.add('hidden');
 
-  let html = '<thead><tr><th>Tenant Name</th><th>Room</th>';
+  let html = '<thead><tr><th>Room</th><th>Tenant</th>';
   dates.forEach(d => { html += `<th>${fmtDate(d)}</th>`; });
   html += '</tr></thead><tbody>';
 
   DATA.residents.forEach((r, ri) => {
-    html += `<tr><td>${r.name}</td><td>${r.room}</td>`;
+    html += `<tr><td>${r.room}</td><td>${r.name}</td>`;
     dates.forEach(d => {
       const val = r.readings[d] != null ? r.readings[d] : '';
       html += `<td class="editable" data-resident="${ri}" data-date="${d}">${val ? numFmt(val) : '-'}</td>`;
