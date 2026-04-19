@@ -157,7 +157,6 @@ function renderAllRoomsChart(computed) {
     });
   });
 
-  // Total per day as a separate bar
   datasets.push({
     label: 'Total Per Day',
     data: computed.rows.map(r => r.totalPerDay),
@@ -170,59 +169,59 @@ function renderAllRoomsChart(computed) {
     type: 'bar',
     data: { labels, datasets },
     options: {
+      indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: { position: 'bottom' },
         tooltip: {
           callbacks: {
-            label: ctx => `${ctx.dataset.label}: ${numFmt(ctx.parsed.y)} litres/day`
+            label: ctx => `${ctx.dataset.label}: ${numFmt(ctx.parsed.x)} litres/day`
           }
         }
       },
       scales: {
-        y: {
+        x: {
           beginAtZero: true,
           title: { display: true, text: 'Litres / Day' },
           ticks: { callback: v => numFmt(v) }
         },
-        x: {
-          ticks: { maxRotation: 90, minRotation: 45, autoSkip: false }
+        y: {
+          ticks: { autoSkip: false }
         }
       }
     }
   });
 }
 
-function renderSingleRoomChart(computed, roomIndex) {
+function renderSingleRoomChart(computed) {
   const ctx = document.getElementById('single-room-chart').getContext('2d');
-  const resident = computed.rows[roomIndex];
   const labels = computed.periods.map(p => periodLabel(p));
-  const data = computed.periods.map(p => resident.perDay[`${p.from}_${p.to}`] || 0);
+
+  const datasets = computed.rows.map((r, i) => ({
+    label: roomLabel(r),
+    data: computed.periods.map(p => r.perDay[`${p.from}_${p.to}`] || 0),
+    borderColor: COLORS[i % COLORS.length],
+    backgroundColor: COLORS[i % COLORS.length] + '20',
+    borderWidth: 2.5,
+    pointRadius: 6,
+    pointBackgroundColor: COLORS[i % COLORS.length],
+    pointHoverRadius: 9,
+    tension: 0.3
+  }));
 
   if (singleRoomChart) singleRoomChart.destroy();
   singleRoomChart = new Chart(ctx, {
     type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: roomLabel(resident),
-        data,
-        borderColor: '#c00000',
-        backgroundColor: 'rgba(192, 0, 0, 0.1)',
-        borderWidth: 3,
-        pointRadius: 8,
-        pointBackgroundColor: '#c00000',
-        pointHoverRadius: 10,
-        fill: true,
-        tension: 0.3
-      }]
-    },
+    data: { labels, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'bottom' },
+        legend: {
+          position: 'bottom',
+          labels: { usePointStyle: true, padding: 15 }
+        },
         tooltip: {
           callbacks: {
             label: ctx => `${ctx.dataset.label}: ${numFmt(ctx.parsed.y)} litres/day`
@@ -284,21 +283,6 @@ function renderTables(computed) {
   pTable.innerHTML = pHtml;
 }
 
-// ── Room Select ──
-
-function populateRoomSelect(computed) {
-  const select = document.getElementById('room-select');
-  select.innerHTML = '';
-  computed.rows.forEach((r, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = roomLabel(r);
-    select.appendChild(opt);
-  });
-  select.addEventListener('change', () => {
-    renderSingleRoomChart(computed, parseInt(select.value));
-  });
-}
 
 // ── Add Reading ──
 
@@ -491,8 +475,7 @@ function renderAll() {
   const computed = computeConsumption(DATA);
   renderCards(computed);
   renderAllRoomsChart(computed);
-  populateRoomSelect(computed);
-  renderSingleRoomChart(computed, 0);
+  renderSingleRoomChart(computed);
   renderTables(computed);
   renderReadingsTable();
 }

@@ -85,7 +85,8 @@ main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
 }
 .chart-section h2 { font-size: 1.1rem; color: #2f5597; margin-bottom: 1rem; }
 .chart-container { position: relative; width: 100%; overflow-x: auto; }
-.chart-container canvas { min-width: 600px; min-height: 350px; }
+.chart-container canvas { min-height: 400px; }
+.chart-container-tall canvas { min-height: 500px; }
 
 .chart-header {
   display: flex;
