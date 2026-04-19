@@ -12,14 +12,11 @@ function getConfig() {
   return { token, owner, repo };
 }
 
-async function fetchData() {
+async function fetchData(requireAuth) {
   const { token, owner, repo } = getConfig();
-  const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/data.json`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github.v3+json'
-    }
-  });
+  const headers = { Accept: 'application/vnd.github.v3+json' };
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/data.json`, { headers });
   if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
   const file = await res.json();
   const content = atob(file.content);
@@ -302,6 +299,12 @@ function populateRoomSelect(computed) {
 // ── Add Reading ──
 
 function openReadingModal() {
+  const { token } = getConfig();
+  if (!token) {
+    showSetup();
+    return;
+  }
+
   const modal = document.getElementById('reading-modal');
   const fields = document.getElementById('reading-fields');
   const dateInput = document.getElementById('reading-date');
@@ -441,17 +444,13 @@ async function init() {
     document.getElementById('reading-modal').classList.add('hidden');
   });
 
-  const { token } = getConfig();
-  if (!token) {
-    showSetup();
-    return;
-  }
-
+  // Try loading data without token first (works for public repos)
   try {
     const { data } = await fetchData();
     DATA = data;
     renderAll();
   } catch (e) {
+    // If public read fails, ask for token
     showSetup();
   }
 }
