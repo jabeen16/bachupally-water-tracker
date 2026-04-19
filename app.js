@@ -220,7 +220,21 @@ function renderSingleRoomChart(computed) {
       plugins: {
         legend: {
           position: 'bottom',
-          labels: { usePointStyle: true, padding: 15 }
+          labels: { usePointStyle: true, padding: 15 },
+          onClick: (e, legendItem, legend) => {
+            const chart = legend.chart;
+            const ci = legendItem.datasetIndex;
+            const allHidden = chart.data.datasets.every((ds, i) => i === ci ? false : !chart.isDatasetVisible(i));
+
+            if (chart.isDatasetVisible(ci) && allHidden) {
+              // Clicked room is the only one visible — show all
+              chart.data.datasets.forEach((ds, i) => { chart.setDatasetVisibility(i, true); });
+            } else {
+              // Hide all, show only clicked
+              chart.data.datasets.forEach((ds, i) => { chart.setDatasetVisibility(i, i === ci); });
+            }
+            chart.update();
+          }
         },
         tooltip: {
           callbacks: {
