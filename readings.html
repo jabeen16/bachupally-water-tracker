@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bachupally Water Tracker — Consumption</title>
+  <title>Bachupally Water Tracker — Meter Readings</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -27,46 +26,46 @@
     </div>
   </div>
 
+  <!-- Add Reading Modal -->
+  <div id="reading-modal" class="modal hidden">
+    <div class="modal-content modal-wide">
+      <h2>Add Meter Reading</h2>
+      <div class="form-row">
+        <label>Date:</label>
+        <input type="date" id="reading-date">
+      </div>
+      <div id="reading-fields"></div>
+      <div class="modal-actions">
+        <button id="save-reading-btn" class="btn-primary">Save Reading</button>
+        <button id="cancel-reading-btn" class="btn-secondary">Cancel</button>
+      </div>
+      <p id="reading-error" class="error hidden"></p>
+    </div>
+  </div>
+
   <header>
     <h1>Bachupally Water Tracker</h1>
     <div class="header-actions">
       <nav class="nav-links">
-        <a href="index.html" class="nav-active">Consumption</a>
-        <a href="readings.html">Meter Readings</a>
+        <a href="index.html">Consumption</a>
+        <a href="readings.html" class="nav-active">Meter Readings</a>
       </nav>
       <button id="settings-btn" class="btn-icon" title="Settings">&#9881;</button>
     </div>
   </header>
 
   <main>
-    <section id="summary-cards" class="cards"></section>
-
     <section class="table-section">
-      <h2>Consumption Summary</h2>
+      <div class="chart-header">
+        <h2>Meter Readings</h2>
+        <div class="header-actions">
+          <button id="add-reading-btn" class="btn-primary">+ Add Reading</button>
+          <button id="save-edits-btn" class="btn-primary hidden">Save Changes</button>
+        </div>
+      </div>
+      <p class="edit-hint">Click any reading value to edit it.</p>
       <div class="table-wrapper">
-        <table id="consumption-table"></table>
-      </div>
-    </section>
-
-    <section class="table-section">
-      <h2>Per Day Usage</h2>
-      <div class="table-wrapper">
-        <table id="perday-table"></table>
-      </div>
-    </section>
-
-    <section class="chart-section">
-      <h2>Per Day Usage — All Rooms (Litres)</h2>
-      <div class="chart-container chart-container-tall">
-        <canvas id="all-rooms-chart"></canvas>
-      </div>
-    </section>
-
-    <section class="chart-section">
-      <h2>Per Day Trend — By Room (Litres)</h2>
-      <p class="edit-hint">Click a room in the legend to show/hide it.</p>
-      <div class="chart-container">
-        <canvas id="single-room-chart"></canvas>
+        <table id="readings-table"></table>
       </div>
     </section>
   </main>
@@ -76,6 +75,6 @@
   </footer>
 
   <script src="shared.js"></script>
-  <script src="consumption.js"></script>
+  <script src="readings.js"></script>
 </body>
 </html>
