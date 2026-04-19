@@ -10,12 +10,31 @@ function getConfig() {
   return { token, owner, repo };
 }
 
+function friendlyErrorMessage(status) {
+  if (status === 401 || status === 403) return 'Your access token has expired or is invalid. Please enter a new one.';
+  if (status === 404) return "Couldn't find the data file. Please check your setup.";
+  if (status === 409) return 'Someone else saved changes while you were editing. Please reload the page.';
+  if (status === 422) return "Couldn't save — the data on GitHub has changed. Please reload the page.";
+  if (status >= 500) return 'GitHub is having issues right now. Please try again in a few minutes.';
+  return `Couldn't save (error ${status}). Check your internet connection and try again.`;
+}
+
+function httpError(status) {
+  const err = new Error(friendlyErrorMessage(status));
+  err.status = status;
+  return err;
+}
+
+function isAuthError(err) {
+  return err && (err.status === 401 || err.status === 403);
+}
+
 async function fetchData() {
   const { token, owner, repo } = getConfig();
   const headers = { Accept: 'application/vnd.github.v3+json' };
   if (token) headers.Authorization = `Bearer ${token}`;
   const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/data.json`, { headers });
-  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+  if (!res.ok) throw httpError(res.status);
   const file = await res.json();
   const content = atob(file.content);
   return { data: JSON.parse(content), sha: file.sha };
@@ -37,7 +56,7 @@ async function saveData(data, sha) {
       sha
     })
   });
-  if (!res.ok) throw new Error(`Save failed: ${res.status}`);
+  if (!res.ok) throw httpError(res.status);
   return res.json();
 }
 
@@ -154,18 +173,34 @@ function populateMonthSelect(selectEl, onChange) {
 
 // ── Setup ──
 
-function showSetup() {
+function showSetup(errorMessage, reauth = false) {
   const { token, owner, repo } = getConfig();
   if (token) document.getElementById('token-input').value = '';
   if (owner) document.getElementById('repo-owner').value = owner;
   if (repo) document.getElementById('repo-name').value = repo;
-  document.getElementById('setup-modal').classList.remove('hidden');
+  const modal = document.getElementById('setup-modal');
+  modal.dataset.reauth = reauth ? '1' : '0';
+  const errorEl = document.getElementById('setup-error');
+  if (errorMessage) {
+    errorEl.textContent = errorMessage;
+    errorEl.classList.remove('hidden');
+  } else {
+    errorEl.classList.add('hidden');
+  }
+  const cancelBtn = document.getElementById('cancel-setup-btn');
+  if (DATA === null) {
+    cancelBtn.classList.add('hidden');
+  } else {
+    cancelBtn.classList.remove('hidden');
+  }
+  modal.classList.remove('hidden');
 }
 
 async function saveSetup(onSuccess) {
   const token = document.getElementById('token-input').value.trim();
   const owner = document.getElementById('repo-owner').value.trim();
   const repo = document.getElementById('repo-name').value.trim();
+  const modal = document.getElementById('setup-modal');
   const errorEl = document.getElementById('setup-error');
   errorEl.classList.add('hidden');
 
@@ -179,13 +214,23 @@ async function saveSetup(onSuccess) {
   localStorage.setItem('gh_owner', owner);
   localStorage.setItem('gh_repo', repo);
 
+  const reauth = modal.dataset.reauth === '1';
+
   try {
-    const { data } = await fetchData();
-    DATA = data;
-    document.getElementById('setup-modal').classList.add('hidden');
-    if (onSuccess) onSuccess();
+    if (reauth) {
+      const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github.v3+json' }
+      });
+      if (!res.ok) throw httpError(res.status);
+    } else {
+      const { data } = await fetchData();
+      DATA = data;
+    }
+    modal.classList.add('hidden');
+    modal.dataset.reauth = '0';
+    if (!reauth && onSuccess) onSuccess();
   } catch (e) {
-    errorEl.textContent = `Connection failed: ${e.message}. Check your token and repo.`;
+    errorEl.textContent = e.message;
     errorEl.classList.remove('hidden');
   }
 }
@@ -196,12 +241,16 @@ async function loadData(onSuccess) {
     DATA = data;
     onSuccess();
   } catch (e) {
-    showSetup();
+    if (document.getElementById('setup-modal')) {
+      showSetup(e.message);
+    } else {
+      alert(`Couldn't load data. ${e.message}`);
+    }
   }
 }
 
 function initSetupListeners(onSuccess) {
-  document.getElementById('settings-btn').addEventListener('click', showSetup);
+  document.getElementById('settings-btn').addEventListener('click', () => showSetup(undefined, DATA !== null));
   document.getElementById('save-token-btn').addEventListener('click', () => saveSetup(onSuccess));
   document.getElementById('cancel-setup-btn').addEventListener('click', () => {
     document.getElementById('setup-modal').classList.add('hidden');

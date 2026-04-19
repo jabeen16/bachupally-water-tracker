@@ -130,7 +130,11 @@ async function saveEdits() {
     await saveData(DATA, sha);
     renderReadingsTable();
   } catch (e) {
-    alert(`Save failed: ${e.message}`);
+    if (isAuthError(e)) {
+      showSetup(e.message, true);
+    } else {
+      alert(e.message);
+    }
   }
 
   btn.textContent = 'Save Changes';
@@ -180,42 +184,59 @@ async function saveReading() {
     return;
   }
 
-  let hasAtLeastOne = false;
+  const newReadings = {};
   DATA.residents.forEach((r, i) => {
     const input = document.getElementById(`reading-${i}`);
     const val = parseInt(input.value);
-    if (!isNaN(val)) {
-      r.readings[date] = val;
-      hasAtLeastOne = true;
-    }
+    if (!isNaN(val)) newReadings[i] = val;
   });
 
-  if (!hasAtLeastOne) {
+  if (Object.keys(newReadings).length === 0) {
     errorEl.textContent = 'Enter at least one reading.';
     errorEl.classList.remove('hidden');
     return;
   }
 
-  DATA.dates.push(date);
-  DATA.dates.sort();
-
+  const btn = document.getElementById('save-reading-btn');
   try {
-    const btn = document.getElementById('save-reading-btn');
     btn.textContent = 'Saving...';
     btn.disabled = true;
+
+    for (const ri in pendingEdits) {
+      for (const key in pendingEdits[ri]) {
+        if (key === '_name') {
+          DATA.residents[ri].name = pendingEdits[ri][key];
+        } else {
+          DATA.residents[ri].readings[key] = pendingEdits[ri][key];
+        }
+      }
+    }
+
+    Object.entries(newReadings).forEach(([i, val]) => {
+      DATA.residents[i].readings[date] = val;
+    });
+    DATA.dates.push(date);
+    DATA.dates.sort();
 
     const { sha } = await fetchData();
     await saveData(DATA, sha);
 
     document.getElementById('reading-modal').classList.add('hidden');
     renderReadingsTable();
+  } catch (e) {
+    DATA.dates = DATA.dates.filter(d => d !== date);
+    Object.keys(newReadings).forEach(i => {
+      delete DATA.residents[i].readings[date];
+    });
+    if (isAuthError(e)) {
+      showSetup(e.message, true);
+    } else {
+      errorEl.textContent = e.message;
+      errorEl.classList.remove('hidden');
+    }
+  } finally {
     btn.textContent = 'Save Reading';
     btn.disabled = false;
-  } catch (e) {
-    errorEl.textContent = `Save failed: ${e.message}`;
-    errorEl.classList.remove('hidden');
-    document.getElementById('save-reading-btn').textContent = 'Save Reading';
-    document.getElementById('save-reading-btn').disabled = false;
   }
 }
 

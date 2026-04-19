@@ -201,6 +201,7 @@ td.changed { background: #fff3cd; }
   z-index: 100;
 }
 .modal.hidden { display: none; }
+#setup-modal { z-index: 110; }
 
 .modal-content {
   background: white;
