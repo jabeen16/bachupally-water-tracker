@@ -228,6 +228,7 @@ td.changed { background: #fff3cd; }
   margin-bottom: 0.75rem;
 }
 .modal-content input:focus { outline: none; border-color: #4472c4; }
+.modal-content input[readonly] { background: #f0f0f0; color: #666; cursor: not-allowed; }
 
 .modal-row { display: flex; gap: 0.5rem; }
 .modal-row input { flex: 1; }

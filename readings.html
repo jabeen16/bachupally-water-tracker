@@ -11,11 +11,13 @@
   <!-- Setup Modal -->
   <div id="setup-modal" class="modal hidden">
     <div class="modal-content">
-      <h2>Login</h2>
-      <p>Enter your access key to manage meter readings.</p>
-      <input type="password" id="token-input" placeholder="Access key">
-      <input type="hidden" id="repo-owner" value="jabeen16">
-      <input type="hidden" id="repo-name" value="bachupally-water-tracker">
+      <h2>Setup GitHub Token</h2>
+      <p>Enter a fine-grained personal access token with <strong>Contents: read/write</strong> permission for the <code>bachupally-water-tracker</code> repo.</p>
+      <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx">
+      <div class="modal-row">
+        <input type="text" id="repo-owner" value="jabeen16" readonly>
+        <input type="text" id="repo-name" value="bachupally-water-tracker" readonly>
+      </div>
       <div class="modal-actions">
         <button id="save-token-btn" class="btn-primary">Save & Connect</button>
         <button id="cancel-setup-btn" class="btn-secondary">Cancel</button>
