@@ -202,6 +202,5 @@ function renderAll() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  initSetupListeners(renderAll);
   loadData(renderAll);
 });

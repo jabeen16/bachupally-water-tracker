@@ -9,24 +9,6 @@
 </head>
 <body>
 
-  <!-- Setup Modal -->
-  <div id="setup-modal" class="modal hidden">
-    <div class="modal-content">
-      <h2>Setup GitHub Token</h2>
-      <p>Enter a fine-grained personal access token with <strong>Contents: read/write</strong> permission for the <code>bachupally-water-tracker</code> repo.</p>
-      <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx">
-      <div class="modal-row">
-        <input type="text" id="repo-owner" placeholder="GitHub username" value="jabeen16">
-        <input type="text" id="repo-name" placeholder="Repo name" value="bachupally-water-tracker">
-      </div>
-      <div class="modal-actions">
-        <button id="save-token-btn" class="btn-primary">Save & Connect</button>
-        <button id="cancel-setup-btn" class="btn-secondary">Cancel</button>
-      </div>
-      <p id="setup-error" class="error hidden"></p>
-    </div>
-  </div>
-
   <header>
     <h1>Bachupally Water Tracker</h1>
     <div class="header-actions">
@@ -34,7 +16,6 @@
         <a href="index.html" class="nav-active">Consumption</a>
         <a href="readings.html">Meter Readings</a>
       </nav>
-      <button id="settings-btn" class="btn-icon" title="Settings">&#9881;</button>
     </div>
   </header>
 
