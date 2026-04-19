@@ -187,7 +187,7 @@ function renderAllRoomsChart(computed) {
           ticks: { callback: v => numFmt(v) }
         },
         x: {
-          ticks: { maxRotation: 45, minRotation: 0 }
+          ticks: { maxRotation: 90, minRotation: 45, autoSkip: false }
         }
       }
     }
