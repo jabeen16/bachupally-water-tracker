@@ -543,6 +543,9 @@ async function init() {
     document.getElementById('reading-modal').classList.add('hidden');
   });
   document.getElementById('save-edits-btn').addEventListener('click', saveEdits);
+  document.getElementById('cancel-setup-btn').addEventListener('click', () => {
+    document.getElementById('setup-modal').classList.add('hidden');
+  });
 
   // Try loading data without token first (works for public repos)
   try {
