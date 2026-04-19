@@ -3,6 +3,32 @@ let DATA = null;
 let allRoomsChart = null;
 let singleRoomChart = null;
 
+// ── Shared legend click handler ──
+function legendClickHandler(e, legendItem, legend) {
+  const chart = legend.chart;
+  const ci = legendItem.datasetIndex;
+  const total = chart.data.datasets.length;
+  const allVisible = chart.data.datasets.every((ds, i) => chart.isDatasetVisible(i));
+  const visibleCount = chart.data.datasets.filter((ds, i) => chart.isDatasetVisible(i)).length;
+
+  if (allVisible) {
+    // All showing → isolate clicked room
+    chart.data.datasets.forEach((ds, i) => { chart.setDatasetVisibility(i, i === ci); });
+  } else if (chart.isDatasetVisible(ci)) {
+    // Clicked a visible room → hide it
+    chart.setDatasetVisibility(ci, false);
+    // If none left visible, show all
+    const stillVisible = chart.data.datasets.filter((ds, i) => chart.isDatasetVisible(i)).length;
+    if (stillVisible === 0) {
+      chart.data.datasets.forEach((ds, i) => { chart.setDatasetVisibility(i, true); });
+    }
+  } else {
+    // Clicked a hidden room → add it (multi-select)
+    chart.setDatasetVisibility(ci, true);
+  }
+  chart.update();
+}
+
 // ── GitHub API ──
 
 function getConfig() {
@@ -173,7 +199,7 @@ function renderAllRoomsChart(computed) {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'bottom' },
+        legend: { position: 'bottom', onClick: legendClickHandler },
         tooltip: {
           callbacks: {
             label: ctx => `${ctx.dataset.label}: ${numFmt(ctx.parsed.x)} litres/day`
@@ -221,20 +247,7 @@ function renderSingleRoomChart(computed) {
         legend: {
           position: 'bottom',
           labels: { usePointStyle: true, padding: 15 },
-          onClick: (e, legendItem, legend) => {
-            const chart = legend.chart;
-            const ci = legendItem.datasetIndex;
-            const allHidden = chart.data.datasets.every((ds, i) => i === ci ? false : !chart.isDatasetVisible(i));
-
-            if (chart.isDatasetVisible(ci) && allHidden) {
-              // Clicked room is the only one visible — show all
-              chart.data.datasets.forEach((ds, i) => { chart.setDatasetVisibility(i, true); });
-            } else {
-              // Hide all, show only clicked
-              chart.data.datasets.forEach((ds, i) => { chart.setDatasetVisibility(i, i === ci); });
-            }
-            chart.update();
-          }
+          onClick: legendClickHandler
         },
         tooltip: {
           callbacks: {
