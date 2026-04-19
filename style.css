@@ -156,8 +156,8 @@ td:nth-child(2), th:nth-child(2) { text-align: center; }
 td.high { background: #fde8e8; color: #c00000; font-weight: 600; }
 td.low { background: #e8f5e9; color: #2e7d32; }
 
-td.editable { cursor: pointer; }
-td.editable:hover { background: #e8f0fe; outline: 2px solid #4472c4; outline-offset: -2px; }
+td.editable, td.editable-name { cursor: pointer; }
+td.editable:hover, td.editable-name:hover { background: #e8f0fe; outline: 2px solid #4472c4; outline-offset: -2px; }
 td.editing { padding: 0.2rem; }
 td.editing input {
   width: 100%;

@@ -12,7 +12,7 @@ function renderReadingsTable() {
   html += '</tr></thead><tbody>';
 
   DATA.residents.forEach((r, ri) => {
-    html += `<tr><td>${r.room}</td><td>${r.name}</td>`;
+    html += `<tr><td>${r.room}</td><td class="editable-name" data-resident="${ri}">${r.name || '-'}</td>`;
     dates.forEach(d => {
       const val = r.readings[d] != null ? r.readings[d] : '';
       html += `<td class="editable" data-resident="${ri}" data-date="${d}">${val ? numFmt(val) : '-'}</td>`;
@@ -25,6 +25,46 @@ function renderReadingsTable() {
   table.querySelectorAll('td.editable').forEach(td => {
     td.addEventListener('click', () => startEdit(td));
   });
+  table.querySelectorAll('td.editable-name').forEach(td => {
+    td.addEventListener('click', () => startNameEdit(td));
+  });
+}
+
+function startNameEdit(td) {
+  const { token } = getConfig();
+  if (!token) { showSetup(); return; }
+  if (td.classList.contains('editing')) return;
+
+  const ri = td.dataset.resident;
+  const current = DATA.residents[ri].name || '';
+
+  td.classList.add('editing');
+  td.innerHTML = `<input type="text" value="${current}" data-original="${current}">`;
+  const input = td.querySelector('input');
+  input.focus();
+  input.select();
+
+  input.addEventListener('blur', () => finishNameEdit(td, input, ri));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') { input.value = input.dataset.original; input.blur(); }
+  });
+}
+
+function finishNameEdit(td, input, ri) {
+  const newVal = input.value.trim();
+  const original = input.dataset.original;
+  td.classList.remove('editing');
+
+  if (newVal !== original) {
+    td.textContent = newVal || '-';
+    td.classList.add('changed');
+    if (!pendingEdits[ri]) pendingEdits[ri] = {};
+    pendingEdits[ri]._name = newVal;
+    document.getElementById('save-edits-btn').classList.remove('hidden');
+  } else {
+    td.textContent = original || '-';
+  }
 }
 
 function startEdit(td) {
@@ -75,8 +115,12 @@ async function saveEdits() {
   btn.disabled = true;
 
   for (const ri in pendingEdits) {
-    for (const date in pendingEdits[ri]) {
-      DATA.residents[ri].readings[date] = pendingEdits[ri][date];
+    for (const key in pendingEdits[ri]) {
+      if (key === '_name') {
+        DATA.residents[ri].name = pendingEdits[ri][key];
+      } else {
+        DATA.residents[ri].readings[key] = pendingEdits[ri][key];
+      }
     }
   }
 
