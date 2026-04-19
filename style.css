@@ -141,6 +141,22 @@ td:nth-child(2), th:nth-child(2) { text-align: center; }
 td.high { background: #fde8e8; color: #c00000; font-weight: 600; }
 td.low { background: #e8f5e9; color: #2e7d32; }
 
+td.editable { cursor: pointer; }
+td.editable:hover { background: #e8f0fe; outline: 2px solid #4472c4; outline-offset: -2px; }
+td.editing { padding: 0.2rem; }
+td.editing input {
+  width: 100%;
+  padding: 0.3rem;
+  border: 2px solid #4472c4;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  text-align: center;
+}
+td.changed { background: #fff3cd; }
+
+.edit-hint { font-size: 0.8rem; color: #888; margin-bottom: 0.75rem; }
+.hidden { display: none; }
+
 /* Modal */
 .modal {
   position: fixed;

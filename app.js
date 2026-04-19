@@ -383,6 +383,104 @@ async function saveReading() {
   }
 }
 
+// ── Editable Readings Table ──
+
+let pendingEdits = {};
+
+function renderReadingsTable() {
+  const table = document.getElementById('readings-table');
+  const dates = DATA.dates;
+  const saveBtn = document.getElementById('save-edits-btn');
+  pendingEdits = {};
+  saveBtn.classList.add('hidden');
+
+  let html = '<thead><tr><th>Tenant Name</th><th>Room</th>';
+  dates.forEach(d => { html += `<th>${fmtDate(d)}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  DATA.residents.forEach((r, ri) => {
+    html += `<tr><td>${r.name}</td><td>${r.room}</td>`;
+    dates.forEach(d => {
+      const val = r.readings[d] != null ? r.readings[d] : '';
+      html += `<td class="editable" data-resident="${ri}" data-date="${d}">${val ? numFmt(val) : '-'}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  table.innerHTML = html;
+
+  // Click to edit
+  table.querySelectorAll('td.editable').forEach(td => {
+    td.addEventListener('click', () => startEdit(td));
+  });
+}
+
+function startEdit(td) {
+  const { token } = getConfig();
+  if (!token) {
+    showSetup();
+    return;
+  }
+
+  if (td.classList.contains('editing')) return;
+
+  const ri = td.dataset.resident;
+  const date = td.dataset.date;
+  const current = DATA.residents[ri].readings[date] || '';
+
+  td.classList.add('editing');
+  td.innerHTML = `<input type="number" value="${current}" data-original="${current}">`;
+  const input = td.querySelector('input');
+  input.focus();
+  input.select();
+
+  input.addEventListener('blur', () => finishEdit(td, input, ri, date));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') { input.value = input.dataset.original; input.blur(); }
+  });
+}
+
+function finishEdit(td, input, ri, date) {
+  const newVal = parseInt(input.value);
+  const original = parseInt(input.dataset.original);
+  td.classList.remove('editing');
+
+  if (!isNaN(newVal) && newVal !== original) {
+    td.textContent = numFmt(newVal);
+    td.classList.add('changed');
+    if (!pendingEdits[ri]) pendingEdits[ri] = {};
+    pendingEdits[ri][date] = newVal;
+    document.getElementById('save-edits-btn').classList.remove('hidden');
+  } else {
+    td.textContent = !isNaN(original) ? numFmt(original) : '-';
+  }
+}
+
+async function saveEdits() {
+  const btn = document.getElementById('save-edits-btn');
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+
+  // Apply edits to DATA
+  for (const ri in pendingEdits) {
+    for (const date in pendingEdits[ri]) {
+      DATA.residents[ri].readings[date] = pendingEdits[ri][date];
+    }
+  }
+
+  try {
+    const { sha } = await fetchData();
+    await saveData(DATA, sha);
+    renderAll();
+  } catch (e) {
+    alert(`Save failed: ${e.message}`);
+  }
+
+  btn.textContent = 'Save Changes';
+  btn.disabled = false;
+}
+
 // ── Render All ──
 
 function renderAll() {
@@ -392,6 +490,7 @@ function renderAll() {
   populateRoomSelect(computed);
   renderSingleRoomChart(computed, 0);
   renderTables(computed);
+  renderReadingsTable();
 }
 
 // ── Setup ──
@@ -443,6 +542,7 @@ async function init() {
   document.getElementById('cancel-reading-btn').addEventListener('click', () => {
     document.getElementById('reading-modal').classList.add('hidden');
   });
+  document.getElementById('save-edits-btn').addEventListener('click', saveEdits);
 
   // Try loading data without token first (works for public repos)
   try {
