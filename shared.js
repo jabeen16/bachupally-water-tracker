@@ -169,8 +169,8 @@ async function saveSetup(onSuccess) {
   const errorEl = document.getElementById('setup-error');
   errorEl.classList.add('hidden');
 
-  if (!token || !owner || !repo) {
-    errorEl.textContent = 'All fields are required.';
+  if (!token) {
+    errorEl.textContent = 'Token is required.';
     errorEl.classList.remove('hidden');
     return;
   }
