@@ -24,7 +24,10 @@ function renderReadingsTable() {
   }
 
   let html = '<thead><tr><th>Room</th><th>Tenant</th>';
-  dates.forEach(d => { html += `<th>${fmtDate(d)}</th>`; });
+  dates.forEach(d => {
+    const t = fmtTime(d);
+    html += `<th>${fmtDate(d)}${t ? `<br><small>${t}</small>` : ''}</th>`;
+  });
   html += '</tr></thead><tbody>';
 
   DATA.residents.forEach((r, ri) => {
@@ -178,7 +181,9 @@ function openReadingModal() {
   const modal = document.getElementById('reading-modal');
   const fields = document.getElementById('reading-fields');
   const dateInput = document.getElementById('reading-date');
+  const timeInput = document.getElementById('reading-time');
   dateInput.value = new Date().toISOString().split('T')[0];
+  timeInput.value = '';
 
   fields.innerHTML = '';
   DATA.residents.forEach((r, i) => {
@@ -195,18 +200,21 @@ function openReadingModal() {
 
 async function saveReading() {
   const dateInput = document.getElementById('reading-date');
-  const date = dateInput.value;
+  const timeInput = document.getElementById('reading-time');
+  const readingDate = dateInput.value;
+  const readingTime = timeInput.value || '00:00';
+  const newReadingKey = `${readingDate}T${readingTime}`;
   const errorEl = document.getElementById('reading-error');
   errorEl.classList.add('hidden');
 
-  if (!date) {
+  if (!readingDate) {
     errorEl.textContent = 'Please select a date.';
     errorEl.classList.remove('hidden');
     return;
   }
 
-  if (DATA.dates.includes(date)) {
-    errorEl.textContent = 'Reading for this date already exists.';
+  if (DATA.dates.includes(newReadingKey)) {
+    errorEl.textContent = 'A reading already exists for this date and time.';
     errorEl.classList.remove('hidden');
     return;
   }
@@ -240,9 +248,9 @@ async function saveReading() {
     }
 
     Object.entries(newReadings).forEach(([i, val]) => {
-      DATA.residents[i].readings[date] = val;
+      DATA.residents[i].readings[newReadingKey] = val;
     });
-    DATA.dates.push(date);
+    DATA.dates.push(newReadingKey);
     DATA.dates.sort();
 
     const { sha } = await fetchData();
@@ -252,9 +260,9 @@ async function saveReading() {
     editMode = false;
     renderReadingsTable();
   } catch (e) {
-    DATA.dates = DATA.dates.filter(d => d !== date);
+    DATA.dates = DATA.dates.filter(d => d !== newReadingKey);
     Object.keys(newReadings).forEach(i => {
-      delete DATA.residents[i].readings[date];
+      delete DATA.residents[i].readings[newReadingKey];
     });
     if (isAuthError(e)) {
       showSetup(e.message, true);

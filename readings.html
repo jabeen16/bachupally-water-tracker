@@ -30,8 +30,12 @@
     <div class="modal-content modal-wide">
       <h2>Add Meter Reading</h2>
       <div class="form-row">
-        <label>Date:</label>
-        <input type="date" id="reading-date">
+        <label>Date & time:</label>
+        <div class="modal-row">
+          <input type="date" id="reading-date">
+          <input type="time" id="reading-time" title="Optional — leave blank for end-of-day default">
+        </div>
+        <p class="form-hint">Leave time blank unless you're recording multiple readings on the same day (e.g. morning + evening for leak checks).</p>
       </div>
       <div id="reading-fields"></div>
       <div class="modal-actions">

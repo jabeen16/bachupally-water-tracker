@@ -261,6 +261,8 @@ td.changed { background: #fff3cd; }
 .error { color: #c00000; font-size: 0.8rem; margin-top: 0.5rem; }
 .error.hidden { display: none; }
 
+.form-hint { color: #666; font-size: 0.75rem; margin-top: 0.3rem; line-height: 1.4; }
+
 footer {
   text-align: center;
   padding: 1.5rem;
