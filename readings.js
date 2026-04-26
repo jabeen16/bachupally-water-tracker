@@ -202,8 +202,7 @@ async function saveReading() {
   const dateInput = document.getElementById('reading-date');
   const timeInput = document.getElementById('reading-time');
   const readingDate = dateInput.value;
-  const readingTime = timeInput.value || '00:00';
-  const newReadingKey = `${readingDate}T${readingTime}`;
+  const readingTimeInput = timeInput.value.trim();
   const errorEl = document.getElementById('reading-error');
   errorEl.classList.add('hidden');
 
@@ -212,6 +211,16 @@ async function saveReading() {
     errorEl.classList.remove('hidden');
     return;
   }
+
+  const readingTimeFormat = /^([01][0-9]|2[0-3]):(00|05|10|15|20|25|30|35|40|45|50|55)$/;
+  if (readingTimeInput && !readingTimeFormat.test(readingTimeInput)) {
+    errorEl.textContent = 'Time must be HH:MM in 24-hour format with 5-minute steps (e.g. 06:30, 18:45).';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  const readingTime = readingTimeInput || '00:00';
+  const newReadingKey = `${readingDate}T${readingTime}`;
 
   if (DATA.dates.includes(newReadingKey)) {
     errorEl.textContent = 'A reading already exists for this date and time.';
