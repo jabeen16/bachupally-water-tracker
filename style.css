@@ -257,6 +257,12 @@ td.changed { background: #fff3cd; }
 }
 .reading-entry label { flex: 1; font-size: 0.85rem; color: #333; min-width: 120px; }
 .reading-entry input { width: 140px; }
+.reading-entry input[type="number"]::-webkit-outer-spin-button,
+.reading-entry input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.reading-entry input[type="number"] { -moz-appearance: textfield; }
 
 .error { color: #c00000; font-size: 0.8rem; margin-top: 0.5rem; }
 .error.hidden { display: none; }

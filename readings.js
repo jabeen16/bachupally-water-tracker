@@ -215,7 +215,7 @@ function openReadingModal() {
     fields.innerHTML += `
       <div class="reading-entry">
         <label>${r.room} — ${r.name}</label>
-        <input type="number" id="reading-${i}" placeholder="Meter reading">
+        <input type="number" id="reading-${i}" min="0" step="1" inputmode="numeric" placeholder="Meter reading">
       </div>
     `;
   });
