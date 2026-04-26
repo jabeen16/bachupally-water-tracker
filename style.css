@@ -311,4 +311,9 @@ footer {
   header h1 { font-size: 1.1rem; }
   main { padding: 1rem; }
   .chart-header { flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+  .chart-header .header-actions { flex-wrap: wrap; row-gap: 0.5rem; }
+  .chart-header .header-actions button { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+  .modal-row { flex-wrap: wrap; }
+  .card { padding: 0.9rem; }
+  .card .value { font-size: 1.4rem; }
 }
