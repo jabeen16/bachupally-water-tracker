@@ -6,26 +6,25 @@ const COLORS = [
   '#70ad47', '#ff5050', '#9b59b6', '#00b0f0', '#00b050'
 ];
 
-function wireToggleAllButton(chart, buttonId) {
-  const btn = document.getElementById(buttonId);
-  if (!btn) return;
-  const sync = () => {
-    const anyVisible = chart.data.datasets.some((ds, i) => chart.isDatasetVisible(i));
-    btn.textContent = anyVisible ? 'Hide all' : 'Show all';
+function wireClearSelectionButton(chart, buttonId) {
+  const clearButton = document.getElementById(buttonId);
+  if (!clearButton) return;
+  const syncDisabledState = () => {
+    const allVisible = chart.data.datasets.every((ds, i) => chart.isDatasetVisible(i));
+    clearButton.disabled = allVisible;
   };
-  btn.onclick = () => {
-    const anyVisible = chart.data.datasets.some((ds, i) => chart.isDatasetVisible(i));
-    chart.data.datasets.forEach((ds, i) => chart.setDatasetVisibility(i, !anyVisible));
+  clearButton.onclick = () => {
+    chart.data.datasets.forEach((ds, i) => chart.setDatasetVisibility(i, true));
     chart.update();
-    sync();
+    syncDisabledState();
   };
   const legendOpts = chart.options.plugins.legend;
   const originalLegendClick = legendOpts.onClick;
   legendOpts.onClick = function (e, legendItem, legend) {
     originalLegendClick.call(this, e, legendItem, legend);
-    sync();
+    syncDisabledState();
   };
-  sync();
+  syncDisabledState();
 }
 
 function makeSubDayPattern(baseColor) {
@@ -151,7 +150,7 @@ function renderAllRoomsChart(computed) {
       }
     }
   });
-  wireToggleAllButton(allRoomsChart, 'all-rooms-toggle');
+  wireClearSelectionButton(allRoomsChart, 'all-rooms-toggle');
 }
 
 function renderLineChart(computed) {
@@ -204,7 +203,7 @@ function renderLineChart(computed) {
       }
     }
   });
-  wireToggleAllButton(singleRoomChart, 'single-room-toggle');
+  wireClearSelectionButton(singleRoomChart, 'single-room-toggle');
 }
 
 function renderTables(computed) {

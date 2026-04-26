@@ -57,6 +57,8 @@ header h1 { font-size: 1.4rem; font-weight: 600; }
   cursor: pointer;
 }
 .btn-secondary:hover { background: #d0d0d0; }
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary:disabled:hover { background: #e0e0e0; }
 
 .btn-small { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
 
