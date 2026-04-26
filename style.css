@@ -275,6 +275,27 @@ td.changed { background: #fff3cd; }
 
 .form-hint { color: #666; font-size: 0.75rem; margin-top: 0.3rem; line-height: 1.4; }
 
+.alert-banner {
+  background: #fff8e1;
+  border-left: 4px solid #f4a261;
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.alert-banner h3 {
+  color: #8a4500;
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+.alert-banner ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #4a2900;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.alert-banner li + li { margin-top: 0.4rem; }
+
 footer {
   text-align: center;
   padding: 1.5rem;

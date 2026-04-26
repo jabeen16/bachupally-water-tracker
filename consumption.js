@@ -63,17 +63,111 @@ function legendClickHandler(e, legendItem, legend) {
   chart.update();
 }
 
+function computeMedianPerDay(computed) {
+  const sortedRates = computed.rows.map(r => r.totalPerDay).filter(v => v != null).sort((a, b) => a - b);
+  if (sortedRates.length === 0) return 0;
+  const middleIndex = Math.floor(sortedRates.length / 2);
+  if (sortedRates.length % 2 === 0) {
+    return Math.round(((sortedRates[middleIndex - 1] + sortedRates[middleIndex]) / 2) * 10) / 10;
+  }
+  return sortedRates[middleIndex];
+}
+
+function isOvernightPeriod(p) {
+  const fromDate = p.from.substring(0, 10);
+  const toDate = p.to.substring(0, 10);
+  if (fromDate === toDate) return false;
+  const fromHour = p.from.length > 10 ? parseInt(p.from.substring(11, 13), 10) : 0;
+  const toHour = p.to.length > 10 ? parseInt(p.to.substring(11, 13), 10) : 0;
+  if (fromHour < 18 || toHour > 9) return false;
+  const dayDiffMs = new Date(toDate + 'T00:00:00') - new Date(fromDate + 'T00:00:00');
+  return Math.round(dayDiffMs / 86400000) === 1;
+}
+
+function computePerRoomAnomalies(computed) {
+  const anomalies = [];
+  computed.rows.forEach(row => {
+    if (!row.totalPerDay || row.totalPerDay === 0) return;
+    computed.periods.forEach(p => {
+      const periodKey = `${p.from}_${p.to}`;
+      const periodRate = row.perDay[periodKey];
+      if (periodRate == null) return;
+      if (periodRate > row.totalPerDay * 1.5 && periodRate > row.totalPerDay + 50) {
+        anomalies.push({
+          room: row.room,
+          name: row.name,
+          period: p,
+          rate: periodRate,
+          baseline: row.totalPerDay,
+          ratio: periodRate / row.totalPerDay
+        });
+      }
+    });
+  });
+  return anomalies.sort((a, b) => b.ratio - a.ratio);
+}
+
+function computeOvernightAlerts(computed) {
+  const OVERNIGHT_RATE_THRESHOLD = 120;
+  const alerts = [];
+  computed.periods.forEach(p => {
+    if (!isOvernightPeriod(p)) return;
+    computed.rows.forEach(row => {
+      const periodKey = `${p.from}_${p.to}`;
+      const periodRate = row.perDay[periodKey];
+      if (periodRate != null && periodRate >= OVERNIGHT_RATE_THRESHOLD) {
+        alerts.push({
+          room: row.room,
+          name: row.name,
+          period: p,
+          rate: periodRate
+        });
+      }
+    });
+  });
+  return alerts.sort((a, b) => b.rate - a.rate);
+}
+
+function renderAlerts(computed) {
+  const container = document.getElementById('alerts');
+  const overnightAlerts = computeOvernightAlerts(computed);
+  const roomAnomalies = computePerRoomAnomalies(computed);
+
+  if (overnightAlerts.length === 0 && roomAnomalies.length === 0) {
+    container.innerHTML = '';
+    container.classList.add('hidden');
+    return;
+  }
+
+  let html = '<div class="alert-banner"><h3>⚠ Possible water issues</h3><ul>';
+  overnightAlerts.forEach(a => {
+    html += `<li><strong>${a.room} (${a.name})</strong>: overnight rate <strong>${numFmt(Math.round(a.rate))} L/day</strong> from ${fmtDateTime(a.period.from)} to ${fmtDateTime(a.period.to)} — overnight usage should be near zero.</li>`;
+  });
+  roomAnomalies.forEach(a => {
+    html += `<li><strong>${a.room} (${a.name})</strong>: <strong>${numFmt(Math.round(a.rate))} L/day</strong> during ${fmtDateTime(a.period.from)} → ${fmtDateTime(a.period.to)} — ${a.ratio.toFixed(1)}× their typical ${numFmt(Math.round(a.baseline))} L/day.</li>`;
+  });
+  html += '</ul></div>';
+  container.innerHTML = html;
+  container.classList.remove('hidden');
+}
+
 function renderCards(computed) {
   const container = document.getElementById('summary-cards');
   const totalUsage = computed.rows.reduce((s, r) => s + r.total, 0);
   const highestRoom = computed.rows.reduce((a, b) => a.totalPerDay > b.totalPerDay ? a : b);
   const lowestRoom = computed.rows.reduce((a, b) => a.totalPerDay < b.totalPerDay ? a : b);
+  const medianPerDay = computeMedianPerDay(computed);
 
   container.innerHTML = `
     <div class="card">
       <div class="label">Total Building Usage</div>
       <div class="value">${numFmt(totalUsage)}</div>
       <div class="sub">litres (all rooms combined)</div>
+    </div>
+    <div class="card">
+      <div class="label">Typical Per Day (median)</div>
+      <div class="value">${numFmt(medianPerDay)}</div>
+      <div class="sub">litres / day per resident — half use more, half less</div>
     </div>
     <div class="card">
       <div class="label">Highest Per Day</div>
@@ -249,6 +343,7 @@ function renderTables(computed) {
 function renderForMonth(month) {
   const filtered = getFilteredData(month);
   const computed = computeConsumption(filtered);
+  renderAlerts(computed);
   renderCards(computed);
   renderTables(computed);
   renderAllRoomsChart(computed);
