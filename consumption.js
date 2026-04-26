@@ -6,6 +6,28 @@ const COLORS = [
   '#70ad47', '#ff5050', '#9b59b6', '#00b0f0', '#00b050'
 ];
 
+function wireToggleAllButton(chart, buttonId) {
+  const btn = document.getElementById(buttonId);
+  if (!btn) return;
+  const sync = () => {
+    const anyVisible = chart.data.datasets.some((ds, i) => chart.isDatasetVisible(i));
+    btn.textContent = anyVisible ? 'Hide all' : 'Show all';
+  };
+  btn.onclick = () => {
+    const anyVisible = chart.data.datasets.some((ds, i) => chart.isDatasetVisible(i));
+    chart.data.datasets.forEach((ds, i) => chart.setDatasetVisibility(i, !anyVisible));
+    chart.update();
+    sync();
+  };
+  const legendOpts = chart.options.plugins.legend;
+  const originalLegendClick = legendOpts.onClick;
+  legendOpts.onClick = function (e, legendItem, legend) {
+    originalLegendClick.call(this, e, legendItem, legend);
+    sync();
+  };
+  sync();
+}
+
 function legendClickHandler(e, legendItem, legend) {
   const chart = legend.chart;
   const ci = legendItem.datasetIndex;
@@ -105,6 +127,7 @@ function renderAllRoomsChart(computed) {
       }
     }
   });
+  wireToggleAllButton(allRoomsChart, 'all-rooms-toggle');
 }
 
 function renderLineChart(computed) {
@@ -151,6 +174,7 @@ function renderLineChart(computed) {
       }
     }
   });
+  wireToggleAllButton(singleRoomChart, 'single-room-toggle');
 }
 
 function renderTables(computed) {

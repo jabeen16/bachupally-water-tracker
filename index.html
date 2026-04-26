@@ -42,14 +42,20 @@
     </section>
 
     <section class="chart-section">
-      <h2>Per Day Usage — All Rooms (Litres)</h2>
+      <div class="chart-header">
+        <h2>Per Day Usage — All Rooms (Litres)</h2>
+        <button id="all-rooms-toggle" class="btn-secondary btn-small" type="button">Hide all</button>
+      </div>
       <div class="chart-container chart-container-tall">
         <canvas id="all-rooms-chart"></canvas>
       </div>
     </section>
 
     <section class="chart-section">
-      <h2>Per Day Trend — By Room (Litres)</h2>
+      <div class="chart-header">
+        <h2>Per Day Trend — By Room (Litres)</h2>
+        <button id="single-room-toggle" class="btn-secondary btn-small" type="button">Hide all</button>
+      </div>
       <p class="edit-hint">Click a room in the legend to show/hide it.</p>
       <div class="chart-container">
         <canvas id="single-room-chart"></canvas>
