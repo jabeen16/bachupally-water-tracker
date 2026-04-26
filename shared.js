@@ -117,8 +117,7 @@ function fmtTime(d) {
 function periodLabel(p) {
   const sameDay = p.from.substring(0, 10) === p.to.substring(0, 10);
   if (sameDay) {
-    const fromT = d => d.length > 10 ? d.substring(11, 16) : '00:00';
-    return `${fmtDate(p.from)} ${fromT(p.from)} \u2192 ${fromT(p.to)}`;
+    return `${fmtDate(p.from)} ${p.from.substring(11, 16)} \u2192 ${p.to.substring(11, 16)}`;
   }
   return `${fmtDate(p.from)} \u2192 ${fmtDate(p.to)}`;
 }
