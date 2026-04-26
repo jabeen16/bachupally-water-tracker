@@ -238,16 +238,6 @@ td.changed { background: #fff3cd; }
 .modal-content input:focus { outline: none; border-color: #4472c4; }
 .modal-content input[readonly] { background: #f0f0f0; color: #666; cursor: not-allowed; }
 
-.modal-content select {
-  padding: 0.6rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  background: white;
-  cursor: pointer;
-}
-.modal-content select:focus { outline: none; border-color: #4472c4; }
-
 .modal-row { display: flex; gap: 0.5rem; align-items: stretch; }
 .modal-row input { flex: 1; }
 

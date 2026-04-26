@@ -181,25 +181,11 @@ function openReadingModal() {
   const modal = document.getElementById('reading-modal');
   const fields = document.getElementById('reading-fields');
   const dateInput = document.getElementById('reading-date');
-  const hourSelect = document.getElementById('reading-hour');
-  const minuteSelect = document.getElementById('reading-minute');
+  const hourInput = document.getElementById('reading-hour');
+  const minuteInput = document.getElementById('reading-minute');
   dateInput.value = new Date().toISOString().split('T')[0];
-
-  const hourOptions = ['<option value="">--</option>'];
-  for (let h = 0; h < 24; h++) {
-    const hh = String(h).padStart(2, '0');
-    hourOptions.push(`<option value="${hh}">${hh}</option>`);
-  }
-  hourSelect.innerHTML = hourOptions.join('');
-  hourSelect.value = '';
-
-  const minuteOptions = ['<option value="">--</option>'];
-  for (let m = 0; m < 60; m += 5) {
-    const mm = String(m).padStart(2, '0');
-    minuteOptions.push(`<option value="${mm}">${mm}</option>`);
-  }
-  minuteSelect.innerHTML = minuteOptions.join('');
-  minuteSelect.value = '';
+  hourInput.value = '';
+  minuteInput.value = '';
 
   fields.innerHTML = '';
   DATA.residents.forEach((r, i) => {
@@ -216,11 +202,11 @@ function openReadingModal() {
 
 async function saveReading() {
   const dateInput = document.getElementById('reading-date');
-  const hourSelect = document.getElementById('reading-hour');
-  const minuteSelect = document.getElementById('reading-minute');
+  const hourInput = document.getElementById('reading-hour');
+  const minuteInput = document.getElementById('reading-minute');
   const readingDate = dateInput.value;
-  const selectedHour = hourSelect.value;
-  const selectedMinute = minuteSelect.value;
+  const hourValue = hourInput.value.trim();
+  const minuteValue = minuteInput.value.trim();
   const errorEl = document.getElementById('reading-error');
   errorEl.classList.add('hidden');
 
@@ -230,13 +216,28 @@ async function saveReading() {
     return;
   }
 
-  if ((selectedHour === '') !== (selectedMinute === '')) {
-    errorEl.textContent = 'Please select both hour and minute, or leave both blank.';
+  if ((hourValue === '') !== (minuteValue === '')) {
+    errorEl.textContent = 'Please enter both hour and minute, or leave both blank.';
     errorEl.classList.remove('hidden');
     return;
   }
 
-  const readingTime = selectedHour ? `${selectedHour}:${selectedMinute}` : '00:00';
+  let readingTime = '00:00';
+  if (hourValue !== '') {
+    const hourNumber = parseInt(hourValue, 10);
+    const minuteNumber = parseInt(minuteValue, 10);
+    if (isNaN(hourNumber) || hourNumber < 0 || hourNumber > 23) {
+      errorEl.textContent = 'Hour must be between 0 and 23.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    if (isNaN(minuteNumber) || minuteNumber < 0 || minuteNumber > 59 || minuteNumber % 5 !== 0) {
+      errorEl.textContent = 'Minute must be 0–55 in 5-minute steps.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+    readingTime = `${String(hourNumber).padStart(2, '0')}:${String(minuteNumber).padStart(2, '0')}`;
+  }
   const newReadingKey = `${readingDate}T${readingTime}`;
 
   if (DATA.dates.includes(newReadingKey)) {

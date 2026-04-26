@@ -33,8 +33,8 @@
         <label>Date & time:</label>
         <div class="modal-row">
           <input type="date" id="reading-date">
-          <select id="reading-hour" aria-label="Hour"></select>
-          <select id="reading-minute" aria-label="Minute"></select>
+          <input type="number" id="reading-hour" min="0" max="23" step="1" placeholder="HH" aria-label="Hour (24h)">
+          <input type="number" id="reading-minute" min="0" max="55" step="5" placeholder="MM" aria-label="Minute (5-min steps)">
         </div>
         <p class="form-hint">Leave hour/minute blank unless you're recording multiple readings on the same day (e.g. morning + evening for leak checks). 24-hour, 5-minute steps.</p>
       </div>
