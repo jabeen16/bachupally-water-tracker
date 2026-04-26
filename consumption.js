@@ -375,10 +375,56 @@ function renderForMonth(month) {
   renderLineChart(computed);
 }
 
+function getCurrentComputed() {
+  const select = document.getElementById('month-select');
+  const filtered = getFilteredData(select.value);
+  return { computed: computeConsumption(filtered), monthSuffix: select.value };
+}
+
+function exportConsumptionCsv() {
+  const { computed, monthSuffix } = getCurrentComputed();
+  const headerRow = ['Room', 'Tenant', ...computed.periods.map(p => periodLabel(p)), 'Total'];
+  const dataRows = computed.rows.map(row => [
+    row.room,
+    row.name,
+    ...computed.periods.map(p => row.consumption[`${p.from}_${p.to}`] ?? ''),
+    row.total
+  ]);
+  const periodTotals = computed.periods.map(p =>
+    computed.rows.reduce((sum, row) => sum + (row.consumption[`${p.from}_${p.to}`] || 0), 0)
+  );
+  const grandTotal = computed.rows.reduce((sum, row) => sum + row.total, 0);
+  dataRows.push(['Total', '', ...periodTotals, grandTotal]);
+  downloadCsv(`bachupally-consumption-${monthSuffix}.csv`, headerRow, dataRows);
+}
+
+function exportPerDayCsv() {
+  const { computed, monthSuffix } = getCurrentComputed();
+  const headerRow = ['Room', 'Tenant', ...computed.periods.map(p => periodLabel(p)), 'Total/Day'];
+  const dataRows = computed.rows.map(row => [
+    row.room,
+    row.name,
+    ...computed.periods.map(p => row.perDay[`${p.from}_${p.to}`] ?? ''),
+    row.totalPerDay
+  ]);
+  const periodRates = computed.periods.map(p => {
+    const periodTotal = computed.rows.reduce((sum, row) => sum + (row.consumption[`${p.from}_${p.to}`] || 0), 0);
+    const periodDays = (new Date(p.to) - new Date(p.from)) / 86400000;
+    return periodDays > 0 ? Math.round((periodTotal / periodDays) * 10) / 10 : 0;
+  });
+  const totalElapsedDays = computed.periods.reduce((sum, p) => sum + (new Date(p.to) - new Date(p.from)) / 86400000, 0);
+  const grandTotalConsumption = computed.rows.reduce((sum, row) => sum + row.total, 0);
+  const grandTotalRate = totalElapsedDays > 0 ? Math.round((grandTotalConsumption / totalElapsedDays) * 10) / 10 : 0;
+  dataRows.push(['Total / Day', '', ...periodRates, grandTotalRate]);
+  downloadCsv(`bachupally-perday-${monthSuffix}.csv`, headerRow, dataRows);
+}
+
 function renderAll() {
   const select = document.getElementById('month-select');
   populateMonthSelect(select, renderForMonth);
   renderForMonth(select.value);
+  document.getElementById('export-consumption-btn').addEventListener('click', exportConsumptionCsv);
+  document.getElementById('export-perday-btn').addEventListener('click', exportPerDayCsv);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

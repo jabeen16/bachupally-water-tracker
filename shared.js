@@ -152,6 +152,27 @@ function numFmt(n) {
   return n.toLocaleString('en-IN');
 }
 
+function downloadCsv(filename, headerRow, dataRows) {
+  const escapeCell = cell => {
+    if (cell === null || cell === undefined) return '';
+    const cellText = String(cell);
+    if (/[",\n]/.test(cellText)) return `"${cellText.replace(/"/g, '""')}"`;
+    return cellText;
+  };
+  const csvText = [headerRow, ...dataRows]
+    .map(row => row.map(escapeCell).join(','))
+    .join('\n');
+  const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 function roomLabel(r) {
   return r.name ? `${r.room} (${r.name})` : r.room;
 }

@@ -371,6 +371,17 @@ function initReadings() {
   renderReadingsTable();
 }
 
+function exportReadingsCsv() {
+  const datesInRange = filterDatesByMonth(DATA.dates, currentMonth);
+  const headerRow = ['Room', 'Tenant', ...datesInRange.map(d => fmtDateTime(d))];
+  const dataRows = DATA.residents.map(resident => [
+    resident.room,
+    resident.name,
+    ...datesInRange.map(d => resident.readings[d] ?? '')
+  ]);
+  downloadCsv(`bachupally-readings-${currentMonth}.csv`, headerRow, dataRows);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initSetupListeners(initReadings);
   document.getElementById('add-reading-btn').addEventListener('click', openReadingModal);
@@ -380,5 +391,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('save-edits-btn').addEventListener('click', saveEdits);
   document.getElementById('edit-mode-btn').addEventListener('click', toggleEditMode);
+  document.getElementById('export-readings-btn').addEventListener('click', exportReadingsCsv);
   loadData(initReadings);
 });
