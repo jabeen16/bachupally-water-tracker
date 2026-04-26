@@ -171,6 +171,24 @@ async function saveEdits() {
   btn.disabled = false;
 }
 
+function clampReadingHourInput(hourInputElement) {
+  const trimmedHour = hourInputElement.value.trim();
+  if (trimmedHour === '') return;
+  const parsedHour = parseInt(trimmedHour, 10);
+  if (isNaN(parsedHour)) return;
+  const clampedHour = Math.max(0, Math.min(23, parsedHour));
+  hourInputElement.value = String(clampedHour).padStart(2, '0');
+}
+
+function snapReadingMinuteInput(minuteInputElement) {
+  const trimmedMinute = minuteInputElement.value.trim();
+  if (trimmedMinute === '') return;
+  const parsedMinute = parseInt(trimmedMinute, 10);
+  if (isNaN(parsedMinute)) return;
+  const snappedMinute = Math.min(55, Math.max(0, Math.round(parsedMinute / 5) * 5));
+  minuteInputElement.value = String(snappedMinute).padStart(2, '0');
+}
+
 function openReadingModal() {
   const { token } = getConfig();
   if (!token) {
@@ -185,9 +203,12 @@ function openReadingModal() {
   const minuteInput = document.getElementById('reading-minute');
   const now = new Date();
   const todayLocalDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const defaultMinute = Math.min(55, Math.max(0, Math.round(now.getMinutes() / 5) * 5));
   dateInput.value = todayLocalDate;
-  hourInput.value = '';
-  minuteInput.value = '';
+  hourInput.value = String(now.getHours()).padStart(2, '0');
+  minuteInput.value = String(defaultMinute).padStart(2, '0');
+  hourInput.onblur = () => clampReadingHourInput(hourInput);
+  minuteInput.onblur = () => snapReadingMinuteInput(minuteInput);
 
   fields.innerHTML = '';
   DATA.residents.forEach((r, i) => {
@@ -206,6 +227,8 @@ async function saveReading() {
   const dateInput = document.getElementById('reading-date');
   const hourInput = document.getElementById('reading-hour');
   const minuteInput = document.getElementById('reading-minute');
+  clampReadingHourInput(hourInput);
+  snapReadingMinuteInput(minuteInput);
   const readingDate = dateInput.value;
   const hourValue = hourInput.value.trim();
   const minuteValue = minuteInput.value.trim();
@@ -218,28 +241,25 @@ async function saveReading() {
     return;
   }
 
-  if ((hourValue === '') !== (minuteValue === '')) {
-    errorEl.textContent = 'Please enter both hour and minute, or leave both blank.';
+  if (hourValue === '' || minuteValue === '') {
+    errorEl.textContent = 'Please enter both hour and minute.';
     errorEl.classList.remove('hidden');
     return;
   }
 
-  let readingTime = '00:00';
-  if (hourValue !== '') {
-    const hourNumber = parseInt(hourValue, 10);
-    const minuteNumber = parseInt(minuteValue, 10);
-    if (isNaN(hourNumber) || hourNumber < 0 || hourNumber > 23) {
-      errorEl.textContent = 'Hour must be between 0 and 23.';
-      errorEl.classList.remove('hidden');
-      return;
-    }
-    if (isNaN(minuteNumber) || minuteNumber < 0 || minuteNumber > 59 || minuteNumber % 5 !== 0) {
-      errorEl.textContent = 'Minute must be 0–55 in 5-minute steps.';
-      errorEl.classList.remove('hidden');
-      return;
-    }
-    readingTime = `${String(hourNumber).padStart(2, '0')}:${String(minuteNumber).padStart(2, '0')}`;
+  const hourNumber = parseInt(hourValue, 10);
+  const minuteNumber = parseInt(minuteValue, 10);
+  if (isNaN(hourNumber) || hourNumber < 0 || hourNumber > 23) {
+    errorEl.textContent = 'Please enter a valid hour (0–23).';
+    errorEl.classList.remove('hidden');
+    return;
   }
+  if (isNaN(minuteNumber) || minuteNumber < 0 || minuteNumber > 55 || minuteNumber % 5 !== 0) {
+    errorEl.textContent = 'Please enter a valid minute (0–55, in 5-minute steps).';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  const readingTime = `${String(hourNumber).padStart(2, '0')}:${String(minuteNumber).padStart(2, '0')}`;
   const newReadingKey = `${readingDate}T${readingTime}`;
 
   if (DATA.dates.includes(newReadingKey)) {
@@ -249,14 +269,19 @@ async function saveReading() {
   }
 
   const newReadings = {};
-  DATA.residents.forEach((r, i) => {
-    const input = document.getElementById(`reading-${i}`);
-    const val = parseInt(input.value);
-    if (!isNaN(val)) newReadings[i] = val;
+  const roomsMissingReading = [];
+  DATA.residents.forEach((resident, residentIndex) => {
+    const meterInput = document.getElementById(`reading-${residentIndex}`);
+    const meterValue = parseInt(meterInput.value);
+    if (isNaN(meterValue)) {
+      roomsMissingReading.push(resident.room);
+    } else {
+      newReadings[residentIndex] = meterValue;
+    }
   });
 
-  if (Object.keys(newReadings).length === 0) {
-    errorEl.textContent = 'Enter at least one reading.';
+  if (roomsMissingReading.length > 0) {
+    errorEl.textContent = `Please enter readings for: ${roomsMissingReading.join(', ')}.`;
     errorEl.classList.remove('hidden');
     return;
   }
