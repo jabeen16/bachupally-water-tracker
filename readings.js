@@ -181,9 +181,25 @@ function openReadingModal() {
   const modal = document.getElementById('reading-modal');
   const fields = document.getElementById('reading-fields');
   const dateInput = document.getElementById('reading-date');
-  const timeInput = document.getElementById('reading-time');
+  const hourSelect = document.getElementById('reading-hour');
+  const minuteSelect = document.getElementById('reading-minute');
   dateInput.value = new Date().toISOString().split('T')[0];
-  timeInput.value = '';
+
+  const hourOptions = ['<option value="">--</option>'];
+  for (let h = 0; h < 24; h++) {
+    const hh = String(h).padStart(2, '0');
+    hourOptions.push(`<option value="${hh}">${hh}</option>`);
+  }
+  hourSelect.innerHTML = hourOptions.join('');
+  hourSelect.value = '';
+
+  const minuteOptions = ['<option value="">--</option>'];
+  for (let m = 0; m < 60; m += 5) {
+    const mm = String(m).padStart(2, '0');
+    minuteOptions.push(`<option value="${mm}">${mm}</option>`);
+  }
+  minuteSelect.innerHTML = minuteOptions.join('');
+  minuteSelect.value = '';
 
   fields.innerHTML = '';
   DATA.residents.forEach((r, i) => {
@@ -200,9 +216,11 @@ function openReadingModal() {
 
 async function saveReading() {
   const dateInput = document.getElementById('reading-date');
-  const timeInput = document.getElementById('reading-time');
+  const hourSelect = document.getElementById('reading-hour');
+  const minuteSelect = document.getElementById('reading-minute');
   const readingDate = dateInput.value;
-  const readingTimeInput = timeInput.value.trim();
+  const selectedHour = hourSelect.value;
+  const selectedMinute = minuteSelect.value;
   const errorEl = document.getElementById('reading-error');
   errorEl.classList.add('hidden');
 
@@ -212,14 +230,13 @@ async function saveReading() {
     return;
   }
 
-  const readingTimeFormat = /^([01][0-9]|2[0-3]):(00|05|10|15|20|25|30|35|40|45|50|55)$/;
-  if (readingTimeInput && !readingTimeFormat.test(readingTimeInput)) {
-    errorEl.textContent = 'Time must be HH:MM in 24-hour format with 5-minute steps (e.g. 06:30, 18:45).';
+  if ((selectedHour === '') !== (selectedMinute === '')) {
+    errorEl.textContent = 'Please select both hour and minute, or leave both blank.';
     errorEl.classList.remove('hidden');
     return;
   }
 
-  const readingTime = readingTimeInput || '00:00';
+  const readingTime = selectedHour ? `${selectedHour}:${selectedMinute}` : '00:00';
   const newReadingKey = `${readingDate}T${readingTime}`;
 
   if (DATA.dates.includes(newReadingKey)) {

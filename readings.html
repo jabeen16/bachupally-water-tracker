@@ -33,9 +33,10 @@
         <label>Date & time:</label>
         <div class="modal-row">
           <input type="date" id="reading-date">
-          <input type="text" id="reading-time" placeholder="HH:MM (24h)" maxlength="5" pattern="^([01][0-9]|2[0-3]):(00|05|10|15|20|25|30|35|40|45|50|55)$" title="Optional — 24-hour format, 5-minute steps (e.g. 06:30, 18:45)">
+          <select id="reading-hour" aria-label="Hour"></select>
+          <select id="reading-minute" aria-label="Minute"></select>
         </div>
-        <p class="form-hint">Leave time blank unless you're recording multiple readings on the same day (e.g. morning + evening for leak checks). 24-hour format, 5-minute steps.</p>
+        <p class="form-hint">Leave hour/minute blank unless you're recording multiple readings on the same day (e.g. morning + evening for leak checks). 24-hour, 5-minute steps.</p>
       </div>
       <div id="reading-fields"></div>
       <div class="modal-actions">
