@@ -317,6 +317,18 @@ function renderTables(computed) {
     });
     cHtml += `<td><strong>${numFmt(r.total)}</strong></td></tr>`;
   });
+
+  const periodTotalsConsumption = computed.periods.map(p => {
+    const periodKey = `${p.from}_${p.to}`;
+    return computed.rows.reduce((sum, row) => sum + (row.consumption[periodKey] || 0), 0);
+  });
+  const grandTotalConsumption = computed.rows.reduce((sum, row) => sum + row.total, 0);
+
+  cHtml += '<tr class="totals-row"><td colspan="2"><strong>Total</strong></td>';
+  periodTotalsConsumption.forEach(periodTotal => {
+    cHtml += `<td><strong>${numFmt(periodTotal)}</strong></td>`;
+  });
+  cHtml += `<td><strong>${numFmt(grandTotalConsumption)}</strong></td></tr>`;
   cHtml += '</tbody>';
   cTable.innerHTML = cHtml;
 
@@ -336,6 +348,19 @@ function renderTables(computed) {
     const cls = r.totalPerDay > avgPerDay * 1.5 ? 'high' : r.totalPerDay < avgPerDay * 0.3 ? 'low' : '';
     pHtml += `<td class="${cls}"><strong>${numFmt(r.totalPerDay)}</strong></td></tr>`;
   });
+
+  const periodTotalRates = computed.periods.map((p, i) => {
+    const periodDays = (new Date(p.to) - new Date(p.from)) / 86400000;
+    return periodDays > 0 ? Math.round((periodTotalsConsumption[i] / periodDays) * 10) / 10 : 0;
+  });
+  const totalElapsedDays = computed.periods.reduce((sum, p) => sum + (new Date(p.to) - new Date(p.from)) / 86400000, 0);
+  const grandTotalRate = totalElapsedDays > 0 ? Math.round((grandTotalConsumption / totalElapsedDays) * 10) / 10 : 0;
+
+  pHtml += '<tr class="totals-row"><td colspan="2"><strong>Total / Day</strong></td>';
+  periodTotalRates.forEach(rate => {
+    pHtml += `<td><strong>${numFmt(rate)}</strong></td>`;
+  });
+  pHtml += `<td><strong>${numFmt(grandTotalRate)}</strong></td></tr>`;
   pHtml += '</tbody>';
   pTable.innerHTML = pHtml;
 }

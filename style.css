@@ -178,6 +178,8 @@ td:nth-child(2), th:nth-child(2) { text-align: center; }
 td.high { background: #fde8e8; color: #c00000; font-weight: 600; }
 td.low { background: #e8f5e9; color: #2e7d32; }
 
+tr.totals-row td { background: #f0f4fa; border-top: 2px solid #4472c4; color: #2f5597; }
+
 .table-wrapper.edit-mode td.editable,
 .table-wrapper.edit-mode td.editable-name { cursor: pointer; }
 .table-wrapper.edit-mode td.editable:hover,
