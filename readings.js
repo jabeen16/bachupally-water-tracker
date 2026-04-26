@@ -203,7 +203,11 @@ function openReadingModal() {
   const now = new Date();
   const todayLocalDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const defaultMinute = Math.min(55, Math.max(0, Math.round(now.getMinutes() / 5) * 5));
+  const latestExistingKey = DATA.dates.length > 0 ? DATA.dates[DATA.dates.length - 1] : null;
+  const latestExistingDate = latestExistingKey ? latestExistingKey.substring(0, 10) : null;
   dateInput.value = todayLocalDate;
+  dateInput.max = todayLocalDate;
+  if (latestExistingDate) dateInput.min = latestExistingDate;
   hourInput.value = String(now.getHours()).padStart(2, '0');
   minuteInput.value = String(defaultMinute).padStart(2, '0');
   hourInput.onblur = () => clampReadingHourInput(hourInput);
@@ -261,8 +265,23 @@ async function saveReading() {
   const readingTime = `${String(hourNumber).padStart(2, '0')}:${String(minuteNumber).padStart(2, '0')}`;
   const newReadingKey = `${readingDate}T${readingTime}`;
 
+  const now = new Date();
+  const todayLocalDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  if (readingDate > todayLocalDate) {
+    errorEl.textContent = 'Future dates are not allowed.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
   if (DATA.dates.includes(newReadingKey)) {
     errorEl.textContent = 'A reading already exists for this date and time.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
+  const latestExistingKey = DATA.dates.length > 0 ? DATA.dates[DATA.dates.length - 1] : null;
+  if (latestExistingKey && newReadingKey < latestExistingKey) {
+    errorEl.textContent = `Reading must be after the latest recorded reading (${fmtDateTime(latestExistingKey)}).`;
     errorEl.classList.remove('hidden');
     return;
   }
