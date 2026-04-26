@@ -183,7 +183,9 @@ function openReadingModal() {
   const dateInput = document.getElementById('reading-date');
   const hourInput = document.getElementById('reading-hour');
   const minuteInput = document.getElementById('reading-minute');
-  dateInput.value = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const todayLocalDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  dateInput.value = todayLocalDate;
   hourInput.value = '';
   minuteInput.value = '';
 
@@ -260,16 +262,20 @@ async function saveReading() {
   }
 
   const btn = document.getElementById('save-reading-btn');
+  const previousValuesByResident = {};
   try {
     btn.textContent = 'Saving...';
     btn.disabled = true;
 
     for (const ri in pendingEdits) {
-      for (const key in pendingEdits[ri]) {
-        if (key === '_name') {
-          DATA.residents[ri].name = pendingEdits[ri][key];
+      previousValuesByResident[ri] = {};
+      for (const editFieldKey in pendingEdits[ri]) {
+        if (editFieldKey === '_name') {
+          previousValuesByResident[ri]._name = DATA.residents[ri].name;
+          DATA.residents[ri].name = pendingEdits[ri][editFieldKey];
         } else {
-          DATA.residents[ri].readings[key] = pendingEdits[ri][key];
+          previousValuesByResident[ri][editFieldKey] = DATA.residents[ri].readings[editFieldKey];
+          DATA.residents[ri].readings[editFieldKey] = pendingEdits[ri][editFieldKey];
         }
       }
     }
@@ -291,6 +297,15 @@ async function saveReading() {
     Object.keys(newReadings).forEach(i => {
       delete DATA.residents[i].readings[newReadingKey];
     });
+    for (const ri in previousValuesByResident) {
+      for (const editFieldKey in previousValuesByResident[ri]) {
+        if (editFieldKey === '_name') {
+          DATA.residents[ri].name = previousValuesByResident[ri]._name;
+        } else {
+          DATA.residents[ri].readings[editFieldKey] = previousValuesByResident[ri][editFieldKey];
+        }
+      }
+    }
     if (isAuthError(e)) {
       showSetup(e.message, true);
     } else {
