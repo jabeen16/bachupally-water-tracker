@@ -33,8 +33,8 @@
         <label>Date & time:</label>
         <div class="modal-row">
           <input type="date" id="reading-date">
-          <input type="number" id="reading-hour" min="0" max="23" step="1" placeholder="HH" aria-label="Hour (24h)">
-          <input type="number" id="reading-minute" min="0" max="55" step="5" placeholder="MM" aria-label="Minute (5-min steps)">
+          <input type="number" id="reading-hour" min="0" max="23" step="1" placeholder="HH" aria-label="Hour (24h)" onwheel="this.blur()">
+          <input type="number" id="reading-minute" min="0" max="55" step="5" placeholder="MM" aria-label="Minute (5-min steps)" onwheel="this.blur()">
         </div>
         <p class="form-hint">24-hour format, 5-minute steps. Defaults to the current time. Out-of-range values are auto-corrected; non-numeric entries are left for you to fix.</p>
       </div>

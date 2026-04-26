@@ -111,7 +111,7 @@ function startEdit(td) {
   const current = DATA.residents[ri].readings[date] || '';
 
   td.classList.add('editing');
-  td.innerHTML = `<input type="number" value="${current}" data-original="${current}">`;
+  td.innerHTML = `<input type="number" value="${current}" data-original="${current}" onwheel="this.blur()">`;
   const input = td.querySelector('input');
   input.focus();
   input.select();
@@ -215,7 +215,7 @@ function openReadingModal() {
     fields.innerHTML += `
       <div class="reading-entry">
         <label>${r.room} — ${r.name}</label>
-        <input type="number" id="reading-${i}" min="0" step="1" inputmode="numeric" placeholder="Meter reading">
+        <input type="number" id="reading-${i}" min="0" step="1" inputmode="numeric" placeholder="Meter reading" onwheel="this.blur()">
       </div>
     `;
   });
