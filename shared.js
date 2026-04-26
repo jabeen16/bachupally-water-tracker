@@ -136,6 +136,18 @@ function periodHours(p) {
   return (new Date(p.to) - new Date(p.from)) / 3600000;
 }
 
+function fmtPeriodDuration(p) {
+  const totalMinutes = Math.round((new Date(p.to) - new Date(p.from)) / 60000);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes - days * 1440) / 60);
+  const minutes = totalMinutes - days * 1440 - hours * 60;
+  const parts = [];
+  if (days > 0) parts.push(`${days} day${days === 1 ? '' : 's'}`);
+  if (hours > 0) parts.push(`${hours} hour${hours === 1 ? '' : 's'}`);
+  if (days === 0 && minutes > 0) parts.push(`${minutes} minute${minutes === 1 ? '' : 's'}`);
+  return parts.length > 0 ? parts.join(' ') : '0 minutes';
+}
+
 function numFmt(n) {
   return n.toLocaleString('en-IN');
 }

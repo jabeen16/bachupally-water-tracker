@@ -28,6 +28,23 @@ function wireToggleAllButton(chart, buttonId) {
   sync();
 }
 
+function makeSubDayPattern(baseColor) {
+  const tile = document.createElement('canvas');
+  tile.width = 8;
+  tile.height = 8;
+  const tileCtx = tile.getContext('2d');
+  tileCtx.fillStyle = baseColor;
+  tileCtx.fillRect(0, 0, 8, 8);
+  tileCtx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+  tileCtx.lineWidth = 2;
+  tileCtx.beginPath();
+  tileCtx.moveTo(-2, 2); tileCtx.lineTo(2, -2);
+  tileCtx.moveTo(0, 8);  tileCtx.lineTo(8, 0);
+  tileCtx.moveTo(6, 10); tileCtx.lineTo(10, 6);
+  tileCtx.stroke();
+  return tileCtx.createPattern(tile, 'repeat');
+}
+
 function legendClickHandler(e, legendItem, legend) {
   const chart = legend.chart;
   const ci = legendItem.datasetIndex;
@@ -82,14 +99,13 @@ function renderAllRoomsChart(computed) {
   const labels = computed.rows.map(r => roomLabel(r));
   const datasets = [];
 
-  const SUB_DAY_COLOR = '#f4a261';
   computed.periods.forEach((p, i) => {
     const key = `${p.from}_${p.to}`;
-    const subDay = isSubDayPeriod(p);
+    const baseColor = COLORS[i % COLORS.length];
     datasets.push({
       label: periodLabel(p),
       data: computed.rows.map(r => r.perDay[key] || 0),
-      backgroundColor: subDay ? SUB_DAY_COLOR : COLORS[i % COLORS.length],
+      backgroundColor: isSubDayPeriod(p) ? makeSubDayPattern(baseColor) : baseColor,
       borderRadius: 4,
       period: p
     });
@@ -118,7 +134,7 @@ function renderAllRoomsChart(computed) {
               const period = ctx.dataset.period;
               const rateLabel = `${ctx.dataset.label}: ${numFmt(ctx.parsed.x)} litres/day`;
               if (!period) return rateLabel;
-              return `${rateLabel} (over ${periodHours(period).toFixed(1)} h)`;
+              return `${rateLabel} (over ${fmtPeriodDuration(period)})`;
             }
           }
         }
@@ -174,7 +190,7 @@ function renderLineChart(computed) {
               const period = periodsByIndex[ctx.dataIndex];
               const rateLabel = `${ctx.dataset.label}: ${numFmt(ctx.parsed.y)} litres/day`;
               if (!period) return rateLabel;
-              return `${rateLabel} (over ${periodHours(period).toFixed(1)} h)`;
+              return `${rateLabel} (over ${fmtPeriodDuration(period)})`;
             }
           }
         }
