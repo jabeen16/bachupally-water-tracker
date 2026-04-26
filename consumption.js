@@ -194,7 +194,7 @@ function renderLineChart(computed) {
 function renderTables(computed) {
   const cTable = document.getElementById('consumption-table');
   let cHtml = '<thead><tr><th>Room</th><th>Tenant</th>';
-  computed.periods.forEach(p => { cHtml += `<th>${periodLabel(p)}</th>`; });
+  computed.periods.forEach(p => { cHtml += `<th>${periodLabelHtml(p)}</th>`; });
   cHtml += '<th>Total</th></tr></thead><tbody>';
 
   const allPerDay = computed.rows.map(r => r.totalPerDay);
@@ -213,7 +213,7 @@ function renderTables(computed) {
 
   const pTable = document.getElementById('perday-table');
   let pHtml = '<thead><tr><th>Room</th><th>Tenant</th>';
-  computed.periods.forEach(p => { pHtml += `<th>${periodLabel(p)}</th>`; });
+  computed.periods.forEach(p => { pHtml += `<th>${periodLabelHtml(p)}</th>`; });
   pHtml += '<th>Total/Day</th></tr></thead><tbody>';
 
   computed.rows.forEach(r => {

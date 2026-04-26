@@ -113,8 +113,19 @@ function fmtDateTime(d) {
   return `${fmtDate(d)} ${timePart}`;
 }
 
+function fmtDateTimeHtml(d) {
+  const timePart = d.length > 10 ? d.substring(11, 16) : '00:00';
+  return `${fmtDate(d)}<br><small>${timePart}</small>`;
+}
+
 function periodLabel(p) {
   return `${fmtDateTime(p.from)} \u2192 ${fmtDateTime(p.to)}`;
+}
+
+function periodLabelHtml(p) {
+  const fromTime = p.from.length > 10 ? p.from.substring(11, 16) : '00:00';
+  const toTime = p.to.length > 10 ? p.to.substring(11, 16) : '00:00';
+  return `${fmtDate(p.from)} \u2192 ${fmtDate(p.to)}<br><small>${fromTime} \u2192 ${toTime}</small>`;
 }
 
 function isSubDayPeriod(p) {

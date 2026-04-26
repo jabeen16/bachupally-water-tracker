@@ -25,8 +25,7 @@ function renderReadingsTable() {
 
   let html = '<thead><tr><th>Room</th><th>Tenant</th>';
   dates.forEach(d => {
-    const timePart = d.length > 10 ? d.substring(11, 16) : '00:00';
-    html += `<th>${fmtDate(d)}<br><small>${timePart}</small></th>`;
+    html += `<th>${fmtDateTimeHtml(d)}</th>`;
   });
   html += '</tr></thead><tbody>';
 
