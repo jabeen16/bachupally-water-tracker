@@ -258,7 +258,17 @@ td.changed { background: #fff3cd; }
 .reading-entry label { flex: 1; font-size: 0.85rem; color: #333; min-width: 120px; }
 .reading-entry input { width: 140px; }
 
-.error { color: #c00000; font-size: 0.8rem; margin-top: 0.5rem; }
+.error {
+  color: #8a0000;
+  background: #fdecea;
+  border-left: 4px solid #c00000;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.6rem 0.8rem;
+  margin-top: 0.75rem;
+  line-height: 1.4;
+}
 .error.hidden { display: none; }
 
 .form-hint { color: #666; font-size: 0.75rem; margin-top: 0.3rem; line-height: 1.4; }
