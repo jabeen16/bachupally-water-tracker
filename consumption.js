@@ -72,7 +72,7 @@ function renderCards(computed) {
     <div class="card">
       <div class="label">Readings Recorded</div>
       <div class="value">${DATA.dates.length}</div>
-      <div class="sub">${fmtDate(DATA.dates[0])} to ${fmtDate(DATA.dates[DATA.dates.length - 1])}</div>
+      <div class="sub">${fmtDateTime(DATA.dates[0])} to ${fmtDateTime(DATA.dates[DATA.dates.length - 1])}</div>
     </div>
   `;
 }
@@ -82,13 +82,16 @@ function renderAllRoomsChart(computed) {
   const labels = computed.rows.map(r => roomLabel(r));
   const datasets = [];
 
+  const SUB_DAY_COLOR = '#f4a261';
   computed.periods.forEach((p, i) => {
     const key = `${p.from}_${p.to}`;
+    const subDay = isSubDayPeriod(p);
     datasets.push({
       label: periodLabel(p),
       data: computed.rows.map(r => r.perDay[key] || 0),
-      backgroundColor: COLORS[i % COLORS.length],
-      borderRadius: 4
+      backgroundColor: subDay ? SUB_DAY_COLOR : COLORS[i % COLORS.length],
+      borderRadius: 4,
+      period: p
     });
   });
 
@@ -111,7 +114,12 @@ function renderAllRoomsChart(computed) {
         legend: { position: 'bottom', onClick: legendClickHandler },
         tooltip: {
           callbacks: {
-            label: ctx => `${ctx.dataset.label}: ${numFmt(ctx.parsed.x)} litres/day`
+            label: ctx => {
+              const period = ctx.dataset.period;
+              const rateLabel = `${ctx.dataset.label}: ${numFmt(ctx.parsed.x)} litres/day`;
+              if (!period) return rateLabel;
+              return `${rateLabel} (over ${periodHours(period).toFixed(1)} h)`;
+            }
           }
         }
       },
@@ -133,6 +141,7 @@ function renderAllRoomsChart(computed) {
 function renderLineChart(computed) {
   const ctx = document.getElementById('single-room-chart').getContext('2d');
   const labels = computed.periods.map(p => periodLabel(p));
+  const periodsByIndex = computed.periods;
 
   const datasets = computed.rows.map((r, i) => ({
     label: roomLabel(r),
@@ -161,7 +170,12 @@ function renderLineChart(computed) {
         },
         tooltip: {
           callbacks: {
-            label: ctx => `${ctx.dataset.label}: ${numFmt(ctx.parsed.y)} litres/day`
+            label: ctx => {
+              const period = periodsByIndex[ctx.dataIndex];
+              const rateLabel = `${ctx.dataset.label}: ${numFmt(ctx.parsed.y)} litres/day`;
+              if (!period) return rateLabel;
+              return `${rateLabel} (over ${periodHours(period).toFixed(1)} h)`;
+            }
           }
         }
       },

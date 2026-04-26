@@ -108,18 +108,21 @@ function fmtDate(d) {
   return dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 }
 
-function fmtTime(d) {
-  if (d.length <= 10) return '';
-  const t = d.substring(11, 16);
-  return t === '00:00' ? '' : t;
+function fmtDateTime(d) {
+  const timePart = d.length > 10 ? d.substring(11, 16) : '00:00';
+  return `${fmtDate(d)} ${timePart}`;
 }
 
 function periodLabel(p) {
-  const sameDay = p.from.substring(0, 10) === p.to.substring(0, 10);
-  if (sameDay) {
-    return `${fmtDate(p.from)} ${p.from.substring(11, 16)} \u2192 ${p.to.substring(11, 16)}`;
-  }
-  return `${fmtDate(p.from)} \u2192 ${fmtDate(p.to)}`;
+  return `${fmtDateTime(p.from)} \u2192 ${fmtDateTime(p.to)}`;
+}
+
+function isSubDayPeriod(p) {
+  return p.from.substring(0, 10) === p.to.substring(0, 10);
+}
+
+function periodHours(p) {
+  return (new Date(p.to) - new Date(p.from)) / 3600000;
 }
 
 function numFmt(n) {
